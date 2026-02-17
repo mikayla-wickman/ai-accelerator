@@ -17,3 +17,10 @@ This is a newly initialized repository with minimal structure. The project is in
 ## Development Instructions
 
 This file should be updated as the project structure and development workflows are established.
+
+You have access to our internal Slack, Jira, Confluence, Reforge, Google Docs. Please use these where relevant when gathering context and planning.
+- Slack: Internal company chat
+- Jira: Product roadmaps and bugs
+- Confluence: Product documentation
+- Reforge: Voice of customer and customer feedback
+- Google Docs: Internal presentations and strategy decks
