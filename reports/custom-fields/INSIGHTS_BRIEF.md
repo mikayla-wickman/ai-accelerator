@@ -119,22 +119,7 @@ No field available to capture and display PO numbers on invoices or job records
 
 ---
 
-#### Use Case 4: Invoice Customization (18+ mentions)
-**What they're trying to do:**
-Add company-specific information to invoices (custom headers, progress payment tracking, service address, warranty info)
-
-**Current limitation:**
-Invoice templates are rigid - can't add custom fields or custom sections beyond PO numbers
-
-**Customer quote:**
-> "Please allow for custom inputs on the invoice like Progress Payment #1 or Service address or a custom space"
-
-**Impact without feature:**
-Manual workarounds → inconsistent invoice formatting → unprofessional appearance → customer confusion
-
----
-
-#### Use Case 5: Data Quality Enforcement (15+ mentions)
+#### Use Case 4: Data Quality Enforcement (15+ mentions)
 **What they're trying to do:**
 Make certain fields required so critical information isn't missed during job creation or customer intake
 
@@ -149,22 +134,7 @@ Incomplete records → broken reporting → compliance issues → downstream wor
 
 ---
 
-#### Use Case 6: Multi-Property Customer Management (10+ mentions)
-**What they're trying to do:**
-Track customer-specific notes and context that's easy to find across multiple properties
-
-**Current limitation:**
-Notes are attached to individual jobs, hard to search across a customer's history
-
-**Customer quote:**
-> "Our technicians have a hard time finding private notes on some of our customers that have multiple properties"
-
-**Impact without feature:**
-Lost context → field techs lack critical information → poor customer experience → repeated questions
-
----
-
-#### Use Case 7: Field Tech Reporting & Tracking (18+ mentions)
+#### Use Case 5: Field Tech Reporting & Tracking (18+ mentions)
 **What they're trying to do:**
 Create custom reports combining field tech data with business-specific metrics (time tracking, payroll, performance)
 
@@ -185,10 +155,8 @@ Manual spreadsheet work → delayed payroll reconciliation → no performance vi
 |------------|--------|----------|
 | Can't customize lead intake forms | 20+ | High - Blocks sales qualification |
 | Can't add PO numbers to invoices/jobs | 12+ | **Critical - Blocks payment** |
-| Can't customize invoices | 18+ | Medium - Unprofessional appearance |
 | Can't enforce required fields | 15+ | High - Data quality issues |
 | Can't track marketing attribution | 10+ | Medium - Limits ROI measurement |
-| Can't find customer notes across properties | 10+ | Medium - Lost context |
 | Can't create custom field tech reports | 18+ | Medium - Manual workarounds |
 
 ---
@@ -487,9 +455,8 @@ Manual spreadsheet work → delayed payroll reconciliation → no performance vi
 ### Who Has This Problem Most Urgently
 
 1. **Marketing-driven businesses** tracking lead attribution
-2. **Multi-property service companies** needing structured customer notes
-3. **Franchise organizations** requiring standardized data capture
-4. **Service companies with complex billing** needing invoice customization
+2. **Franchise organizations** requiring standardized data capture
+3. **Service companies with commercial clients** needing PO number tracking for compliance
 
 ### What Success Looks Like
 
@@ -549,12 +516,7 @@ Based on volume, urgency, and strategic alignment:
    - High customer demand
    - Relatively straightforward to implement
 
-5. **Invoice Customization** (18+ mentions)
-   - Customer-facing impact
-   - Professional appearance matters
-   - Billing workflow optimization
-
-6. **Reporting Integration** (Cross-cutting)
+5. **Reporting Integration** (Cross-cutting)
    - Not optional - must work from launch
    - Filter, group, export capabilities
    - Dashboard visibility
