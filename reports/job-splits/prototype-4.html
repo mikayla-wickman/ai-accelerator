@@ -402,6 +402,59 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
 
             <!-- Left: split controls -->
             <div>
+              <!-- Field tech status card -->
+              <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">
+                <div class="figma-comm-header" onclick="(function(btn){var b=document.getElementById('fts-body');var open=b.style.display!=='none';b.style.display=open?'none':'';btn.querySelector('#fts-chev').textContent=open?'▼':'▲';})(this)" style="cursor:pointer">
+                  <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Field tech status</span>
+                  <span id="fts-chev">▲</span>
+                </div>
+                <div id="fts-body">
+                  <table style="width:100%;border-collapse:collapse;font-size:13px">
+                    <thead>
+                      <tr>
+                        <th style="padding:10px 20px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Employee name</th>
+                        <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Status</th>
+                        <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total travel time</th>
+                        <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total time on job</th>
+                        <th style="padding:10px 20px 10px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total labor cost</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style="padding:14px 20px;border-bottom:1px solid var(--border)">
+                          <div class="tech-cell">
+                            <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
+                            <div>
+                              <div class="tech-name">Marcus Webb</div>
+                              <div class="tech-meta">Lead Technician</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style="padding:14px 12px;color:var(--text-primary);font-size:13px;border-bottom:1px solid var(--border)">Assigned</td>
+                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px;border-bottom:1px solid var(--border)">—</td>
+                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px;border-bottom:1px solid var(--border)">—</td>
+                        <td style="padding:14px 20px 14px 12px;text-align:right;font-size:13px;border-bottom:1px solid var(--border)">$0.00</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 20px">
+                          <div class="tech-cell">
+                            <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
+                            <div>
+                              <div class="tech-name">Jamie Torres</div>
+                              <div class="tech-meta">Technician</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style="padding:14px 12px;color:var(--text-primary);font-size:13px">Assigned</td>
+                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px">—</td>
+                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px">—</td>
+                        <td style="padding:14px 20px 14px 12px;text-align:right;font-size:13px">$0.00</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">
                 <div class="figma-comm-header" style="cursor:default">
                   <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Splits</span>
