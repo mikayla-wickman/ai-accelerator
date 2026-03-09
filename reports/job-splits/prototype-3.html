@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype 3 — One Truth | Job Splits</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #0057ff;
+  --primary-dark: #0046cc;
+  --primary-light: #e8f0ff;
+  --bg-page: #fafafa;
+  --surface: #ffffff;
+  --text-primary: #15181d;
+  --text-muted: #6b7487;
+  --border: #e1e6f2;
+  --success: #00a344;
+  --success-bg: #e6f7ee;
+  --warning: #bf8600;
+  --warning-bg: #fff8e1;
+  --error: #d81860;
+  --error-bg: #fdeef4;
+  --ai: #623cc9;
+  --ai-bg: #f0ebfc;
+  --radius: 8px;
+  --font: 'Open Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg-page); color: var(--text-primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 14px; }
+
+.proto-banner { background: var(--primary); color: white; padding: 7px 24px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.proto-banner a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 400; }
+.proto-banner a:hover { color: white; text-decoration: underline; }
+.proto-tag { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 10px; }
+
+.app-shell { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 216px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.logo-mark { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; }
+.logo-text { font-size: 15px; font-weight: 700; }
+.sidebar-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+.nav-section { padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 20px; font-size: 13px; color: var(--text-muted); cursor: pointer; border-left: 2px solid transparent; }
+.nav-item:hover { background: #f5f7ff; color: var(--text-primary); }
+.nav-item.active { color: var(--primary); font-weight: 600; background: var(--primary-light); border-left-color: var(--primary); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.breadcrumb a { color: var(--primary); text-decoration: none; }
+.breadcrumb-sep { color: var(--border); }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.avatar-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.avatar-sm { width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+/* Split layout: Job page + Side panel */
+.job-and-panel { flex: 1; display: flex; overflow: hidden; }
+.job-content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+.split-panel { width: 420px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-muted { background: var(--bg-page); color: var(--text-muted); border: 1px solid var(--border); }
+
+.job-number { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.job-title { font-size: 20px; font-weight: 400; margin-bottom: 8px; }
+.job-meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.job-meta-item { font-size: 13px; color: var(--text-muted); }
+
+.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab:hover { color: var(--text-primary); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+.card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.info-dl { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+.info-value { font-size: 14px; }
+
+.tech-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.tech-row:last-child { border-bottom: none; }
+.tech-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.tech-name { font-weight: 600; font-size: 13px; }
+.tech-role { font-size: 12px; color: var(--text-muted); }
+
+/* Highlight card */
+.highlight-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; background: var(--bg-page); cursor: pointer; transition: all 0.12s; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.highlight-card:hover { border-color: var(--primary); background: var(--primary-light); }
+.highlight-card.active { border-color: var(--primary); background: var(--primary-light); }
+.highlight-icon { font-size: 20px; }
+.highlight-text-main { font-size: 13px; font-weight: 600; }
+.highlight-text-sub { font-size: 12px; color: var(--text-muted); }
+.highlight-action { font-size: 12px; color: var(--primary); font-weight: 600; }
+
+/* Panel styles */
+.panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.panel-title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+.panel-subtitle { font-size: 12px; color: var(--text-muted); }
+.panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+.panel-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; }
+
+/* Link toggle */
+.link-toggle-section { background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; }
+.link-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.link-toggle-label { font-size: 13px; font-weight: 600; }
+.link-toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: all 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: all 0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--primary); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Section divider */
+.section-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+.section-divider-line { flex: 1; height: 1px; background: var(--border); }
+.section-divider-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
+
+/* Split row in panel */
+.panel-split-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.panel-split-row:last-child { border-bottom: none; }
+.pct-stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.stepper-btn { width: 28px; height: 32px; background: var(--bg-page); border: none; font-size: 16px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-family: var(--font); }
+.stepper-btn:hover { background: var(--primary-light); color: var(--primary); }
+.stepper-val { width: 42px; height: 32px; border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border); text-align: center; font-size: 14px; font-weight: 600; font-family: var(--font); color: var(--text-primary); background: white; }
+.stepper-val:focus { outline: none; background: var(--primary-light); }
+.stepper-val:disabled { color: var(--text-muted); background: var(--bg-page); }
+
+.revenue-attr { font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 76px; text-align: right; }
+.comm-attr { font-size: 13px; color: var(--ai); font-weight: 600; min-width: 76px; text-align: right; }
+
+/* Linked indicator */
+.linked-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--ai); background: var(--ai-bg); padding: 2px 8px; border-radius: 4px; }
+
+/* Split bar */
+.split-bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; display: flex; margin: 10px 0 5px; }
+.split-seg { height: 100%; transition: width 0.3s; }
+
+.total-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); margin-top: 4px; }
+.total-valid { color: var(--success); font-size: 12px; font-weight: 700; }
+
+.btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.btn-text { background: transparent; color: var(--primary); padding: 6px 10px; }
+.btn-text:hover { background: var(--primary-light); }
+.btn-block { width: 100%; justify-content: center; }
+
+/* Chip */
+.chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.12s; }
+.chip:hover { border-color: var(--primary); color: var(--primary); }
+.chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+.chips-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+.info-banner { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 6px; font-size: 13px; line-height: 1.5; margin-bottom: 14px; }
+.info-banner-info { background: var(--primary-light); }
+.info-banner-ai { background: var(--ai-bg); }
+
+/* Toast */
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text-primary); color: white; padding: 12px 20px; border-radius: var(--radius); font-size: 13px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); opacity: 0; transition: all 0.25s; z-index: 1000; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* Confirmation badge */
+.confirm-section { background: var(--success-bg); border: 1px solid rgba(0,163,68,0.25); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; display: none; }
+.confirm-section.show { display: block; }
+
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* Journey */
+.journey { display: flex; align-items: center; padding: 10px 0; margin-bottom: 16px; }
+.j-step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.j-step:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: calc(50% + 14px); right: calc(-50% + 14px); height: 2px; }
+.line-done::after { background: var(--success) !important; }
+.line-active::after { background: var(--primary) !important; }
+.line-future::after { background: var(--border) !important; }
+.j-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; z-index: 1; }
+.j-dot-done { background: var(--success); color: white; }
+.j-dot-active { background: var(--primary); color: white; box-shadow: 0 0 0 4px var(--primary-light); }
+.j-dot-future { background: var(--border); color: var(--text-muted); }
+.j-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; text-align: center; font-weight: 600; line-height: 1.3; }
+
+/* Figma-style Commissions card */
+.figma-comm-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-top:20px; margin-bottom:16px; }
+.figma-comm-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; cursor:pointer; background:var(--bg-page); border-bottom:1px solid var(--border); }
+.figma-comm-header:hover { background:#f0ebfc; }
+.figma-comm-basis { display:flex; align-items:center; gap:8px; padding:8px 16px; border-bottom:1px solid var(--border); background:#fafcff; flex-wrap:wrap; }
+.basis-btn { background:transparent; border:1px solid var(--border); border-radius:4px; padding:3px 10px; font-size:11px; font-weight:600; cursor:pointer; font-family:var(--font); color:var(--text-muted); transition:all 0.15s; }
+.basis-btn.active { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
+.basis-btn:hover:not(.active) { background:var(--bg-page); }
+.figma-stab { background:transparent; border:none; border-bottom:2px solid transparent; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); color:var(--text-muted); margin-bottom:-2px; }
+.figma-stab.active { color:var(--primary); border-bottom-color:var(--primary); }
+.figma-stab:hover:not(.active) { color:var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div class="proto-banner">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="proto-tag">PROTOTYPE 3 OF 3</span>
+    <strong>One Truth, Two Reports</strong>
+    <span style="font-weight:400;color:rgba(255,255,255,0.7)">— Revenue attribution and commissions unified in one panel</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="prototype-2.html">&#8592; Prev prototype</a>
+    <a href="index.html">Comparison</a>
+    <a href="prototype-4.html">Next prototype &#8594;</a>
+  </div>
+</div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">H</div>
+      <span class="logo-text">Housecall Pro</span>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9783;</span> Dashboard</div>
+      <div class="nav-item active"><span class="nav-icon">&#128198;</span> Jobs</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Customers</div>
+      <div class="nav-item"><span class="nav-icon">&#128196;</span> Estimates</div>
+      <div class="nav-item"><span class="nav-icon">&#128176;</span> Invoices</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Schedule</div>
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item"><span class="nav-icon">&#128202;</span> Reports</div>
+      <div class="nav-section">Company</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="#">Jobs</a>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <span>Job #1847</span>
+      </div>
+      <div class="topbar-right">
+        <div class="avatar-chip">
+          <div class="avatar-sm">AK</div>
+          Alpine HVAC
+        </div>
+      </div>
+    </div>
+
+    <div class="job-and-panel">
+
+      <!-- Job Content -->
+      <div class="job-content">
+
+
+        <!-- Job Header -->
+        <div class="job-number">Job #1847</div>
+        <div class="job-title">HVAC Replacement &amp; Duct Sealing</div>
+        <div class="job-meta-row">
+          <span class="badge badge-success">Completed</span>
+          <span class="job-meta-item">&#128197; Mar 5, 2026</span>
+          <span class="job-meta-item">&#128101; Rodriguez Residence</span>
+          <span class="job-meta-item">&#128176; $4,200.00</span>
+        </div>
+
+        <div class="tabs">
+          <div class="tab active">Overview</div>
+          <div class="tab">Schedule</div>
+          <div class="tab">Invoice</div>
+          <div class="tab">Photos</div>
+          <div class="tab">Notes</div>
+        </div>
+
+        <!-- Job info card -->
+        <div class="card">
+          <div class="card-title">Job Details</div>
+          <div class="info-dl">
+            <div><div class="info-label">Job Type</div><div class="info-value">HVAC Installation</div></div>
+            <div><div class="info-label">Invoice Total</div><div class="info-value" style="font-size:18px;font-weight:400">$4,200.00</div></div>
+            <div><div class="info-label">Completed</div><div class="info-value">Mar 5, 2026 3:47 PM</div></div>
+            <div><div class="info-label">Total Time Logged</div><div class="info-value">8h 0m (2 techs)</div></div>
+          </div>
+        </div>
+
+        <!-- Team card — links to panel -->
+        <div class="card" style="cursor:pointer;border-color:var(--primary)" onclick="scrollPanel()">
+          <div class="card-title">
+            &#127828; Team &amp; Splits
+            <span style="font-size:11px;font-weight:400;background:var(--warning-bg);color:var(--warning);padding:2px 8px;border-radius:4px;font-weight:600">Unsaved</span>
+            <span style="margin-left:auto;font-size:12px;color:var(--primary);font-weight:600">Edit in panel &#8594;</span>
+          </div>
+
+          <div class="tech-row">
+            <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
+            <div style="flex:1">
+              <div class="tech-name">Marcus Webb</div>
+              <div class="tech-role">Lead Tech &middot; 5h 30m</div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--primary)" id="summary-pct1">69%</div>
+              <div style="font-size:12px;color:var(--text-muted)" id="summary-rev1">$2,898 revenue</div>
+              <div style="font-size:12px;color:var(--ai)" id="summary-comm1">$290 commission</div>
+            </div>
+          </div>
+          <div class="tech-row">
+            <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
+            <div style="flex:1">
+              <div class="tech-name">Jamie Torres</div>
+              <div class="tech-role">Technician &middot; 2h 30m</div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--primary)" id="summary-pct2">31%</div>
+              <div style="font-size:12px;color:var(--text-muted)" id="summary-rev2">$1,302 revenue</div>
+              <div style="font-size:12px;color:var(--ai)" id="summary-comm2">$130 commission</div>
+            </div>
+          </div>
+
+          <div class="split-bar" style="margin-top:14px">
+            <div class="split-seg" id="job-bar1" style="width:69%;background:var(--primary)"></div>
+            <div class="split-seg" id="job-bar2" style="width:31%;background:var(--success)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+            <span id="job-bar-label1" style="color:var(--primary);font-weight:600">Marcus 69%</span>
+            <span id="job-bar-label2" style="color:var(--success);font-weight:600">Jamie 31%</span>
+          </div>
+
+          <div style="margin-top:14px;display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid var(--border)">
+            <span class="linked-badge">&#128279; Revenue &amp; Commission linked</span>
+            <span style="font-size:12px;color:var(--text-muted)">Changing one updates both</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Split Panel -->
+      <div class="split-panel" id="split-panel">
+        <div class="panel-header">
+          <div class="panel-title">Revenue &amp; Commission Splits</div>
+          <div class="panel-subtitle">Job #1847 &middot; $4,200.00 total &middot; Admin access only</div>
+        </div>
+
+        <div class="panel-body" id="panel-body">
+
+          <!-- Preset chips -->
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Quick presets</div>
+          <div class="chips-row">
+            <div class="chip" onclick="applyPreset('first',this)">All to First</div>
+            <div class="chip" onclick="applyPreset('equal',this)">Equal</div>
+            <div class="chip active" onclick="applyPreset('time',this)">Proportional to Time</div>
+            <div class="chip" onclick="applyPreset('custom',this)">Custom</div>
+          </div>
+
+          <!-- Revenue section -->
+          <div class="section-divider">
+            <div class="section-divider-line"></div>
+            <div class="section-divider-label">Revenue Attribution</div>
+            <div class="section-divider-line"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Affects the Tech Leaderboard and performance reports. <strong>Not visible to field techs.</strong></div>
+
+          <div class="panel-split-row">
+            <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff;width:30px;height:30px;font-size:10px">MW</div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px">Marcus Webb</div>
+              <div style="font-size:11px;color:var(--text-muted)">Lead Tech &middot; 5h 30m</div>
+            </div>
+            <div class="pct-stepper">
+              <button class="stepper-btn" onclick="adjustPct(1,-5)">&#8722;</button>
+              <input class="stepper-val" id="rev-pct1" type="number" value="69" min="0" max="100" onchange="onRevInput()" oninput="onRevInput()">
+              <button class="stepper-btn" onclick="adjustPct(1,5)">+</button>
+            </div>
+            <div class="revenue-attr" id="rev-attr1">$2,898</div>
+          </div>
+          <div class="panel-split-row">
+            <div class="tech-avatar" style="background:#e6f7ee;color:#00a344;width:30px;height:30px;font-size:10px">JT</div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px">Jamie Torres</div>
+              <div style="font-size:11px;color:var(--text-muted)">Technician &middot; 2h 30m</div>
+            </div>
+            <div class="pct-stepper">
+              <button class="stepper-btn" onclick="adjustPct(2,-5)">&#8722;</button>
+              <input class="stepper-val" id="rev-pct2" type="number" value="31" min="0" max="100" disabled onchange="onRevInput()" oninput="onRevInput()">
+              <button class="stepper-btn" onclick="adjustPct(2,5)">+</button>
+            </div>
+            <div class="revenue-attr" id="rev-attr2">$1,302</div>
+          </div>
+          <div class="split-bar">
+            <div class="split-seg" id="panel-bar1" style="width:69%;background:var(--primary)"></div>
+            <div class="split-seg" id="panel-bar2" style="width:31%;background:var(--success)"></div>
+          </div>
+          <div class="total-row">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:12px;color:var(--text-muted);font-weight:600">Total</span>
+              <span class="total-valid" id="rev-total">&#10003; 100%</span>
+            </div>
+            <span style="font-size:14px;font-weight:700">$4,200.00</span>
+          </div>
+
+          <!-- Commissions card -->
+          <div class="figma-comm-card">
+            <div class="figma-comm-header" onclick="toggleCommCard()">
+              <span style="font-weight:700;font-size:13px;color:var(--ai)">Commissions</span>
+              <span id="comm-chev" style="font-size:10px;color:var(--text-muted)">&#9650;</span>
+            </div>
+            <div id="figma-comm-body">
+              <div class="figma-comm-basis">
+                <span style="font-size:12px;color:var(--text-muted)">Basis:</span>
+                <div style="display:flex;gap:4px">
+                  <button id="basis-rev" class="basis-btn active" onclick="setCommBasis('revenue')">Revenue</button>
+                  <button id="basis-gp" class="basis-btn" onclick="setCommBasis('gross_profit')">Gross profit</button>
+                </div>
+                <a href="#" style="margin-left:auto;font-size:11px;color:var(--primary);text-decoration:none">Manage pay ↗</a>
+              </div>
+              <div id="gp-metrics" style="display:none;padding:10px 16px;background:#f5f8ff;border-bottom:1px solid var(--border)">
+                <div style="display:flex;gap:20px">
+                  <div>
+                    <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px">Adjusted GP</div>
+                    <div style="font-size:15px;font-weight:700">$1,890.00</div>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px">GP total</div>
+                    <div style="font-size:15px;font-weight:700">$2,100.00</div>
+                  </div>
+                </div>
+              </div>
+              <div id="comm-subtabs" style="display:flex;border-bottom:2px solid var(--border);padding:0 14px;gap:2px">
+                <button id="stab-lineitems" class="figma-stab" onclick="setCommTab('lineitems')">Line items</button>
+                <button id="stab-manual" class="figma-stab active" onclick="setCommTab('manual')">Manual splits</button>
+              </div>
+              <div id="comm-match-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);background:#fafcff">
+                <div>
+                  <div style="font-size:12px;font-weight:600">Match job splits</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Mirror the revenue attribution percentages above</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="comm-match-toggle" checked onchange="onCommMatchToggle()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div id="comm-lineitems-content" style="display:none;padding:20px 14px;text-align:center;color:var(--text-muted);font-size:12px">
+                Line item commission breakdown coming soon
+              </div>
+              <div id="comm-pool-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border)">
+                <span style="font-size:11px;font-weight:600;color:var(--text-muted)">Commission pool</span>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <span style="font-size:12px;color:var(--text-muted)">$</span>
+                  <input id="c-pool" type="number" value="420" style="width:64px;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:12px;text-align:right" oninput="onCommPool()">
+                </div>
+              </div>
+              <table id="comm-work-table" style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead>
+                  <tr style="background:var(--bg-page)">
+                    <th style="text-align:left;padding:6px 16px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Work by</th>
+                    <th style="text-align:center;padding:6px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Split</th>
+                    <th style="text-align:right;padding:6px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Amount</th>
+                    <th style="text-align:center;padding:6px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Rate</th>
+                    <th style="text-align:right;padding:6px 16px 6px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:8px 16px;border-bottom:1px solid var(--border)">
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <div style="width:22px;height:22px;border-radius:50%;background:#e8f0ff;color:#0057ff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">MW</div>
+                        <span style="font-weight:600">Marcus Webb</span>
+                      </div>
+                    </td>
+                    <td style="padding:8px 6px;text-align:center;border-bottom:1px solid var(--border)">
+                      <span id="c-split1" style="font-weight:700;color:var(--ai)">69%</span>
+                      <div id="c-stepper1" style="display:none;align-items:center;gap:1px;justify-content:center">
+                        <button onclick="adjustCommSplit(1,-5)" style="width:19px;height:19px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:13px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
+                        <input id="c-split1-in" type="number" min="0" max="100" value="69" style="width:32px;padding:1px 2px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);text-align:center;color:var(--ai);font-weight:700" oninput="onCommSplitInput(1)">
+                        <button onclick="adjustCommSplit(1,5)" style="width:19px;height:19px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:13px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
+                      </div>
+                    </td>
+                    <td style="padding:8px 6px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-amount1">$289.80</span></td>
+                    <td style="padding:8px 6px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">Work 10%</span></td>
+                    <td style="padding:8px 16px 8px 6px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-total1" style="font-weight:600">$289.80</span></td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 16px">
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <div style="width:22px;height:22px;border-radius:50%;background:#e6f7ee;color:#00a344;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">JT</div>
+                        <span style="font-weight:600">Jamie Torres</span>
+                      </div>
+                    </td>
+                    <td style="padding:8px 6px;text-align:center">
+                      <span id="c-split2" style="font-weight:700;color:var(--ai)">31%</span>
+                      <div id="c-stepper2" style="display:none;align-items:center;gap:1px;justify-content:center">
+                        <button onclick="adjustCommSplit(2,-5)" style="width:19px;height:19px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:13px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
+                        <input id="c-split2-in" type="number" min="0" max="100" value="31" style="width:32px;padding:1px 2px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);text-align:center;color:var(--ai);font-weight:700" oninput="onCommSplitInput(2)">
+                        <button onclick="adjustCommSplit(2,5)" style="width:19px;height:19px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:13px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
+                      </div>
+                    </td>
+                    <td style="padding:8px 6px;text-align:right"><span id="c-amount2">$130.20</span></td>
+                    <td style="padding:8px 6px;text-align:center"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">Work 10%</span></td>
+                    <td style="padding:8px 16px 8px 6px;text-align:right"><span id="c-total2" style="font-weight:600">$130.20</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div id="comm-subtotal-row" style="padding:8px 16px 4px;display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);margin-top:4px">
+                <span>Work commission subtotal</span>
+                <span id="c-subtotal">$420.00</span>
+              </div>
+              <div id="comm-payout-row" style="padding:6px 16px 12px;display:flex;justify-content:space-between;font-size:13px;font-weight:700">
+                <span>Commission payout</span>
+                <span id="c-payout" style="color:var(--ai)">$420.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="confirm-section" id="confirm-section">
+            <div style="font-size:13px;font-weight:600;color:var(--success);margin-bottom:4px">&#10003; Splits saved successfully</div>
+            <div style="font-size:12px;color:var(--text-muted)">Revenue and commission reports will reflect these splits immediately.</div>
+          </div>
+
+        </div>
+
+        <div class="panel-footer">
+          <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveSplits()">Save Revenue &amp; Commission Splits</button>
+          <button class="btn btn-ghost" onclick="applyPreset('time', null)">Reset</button>
+        </div>
+      </div>
+
+    </div><!-- /job-and-panel -->
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span style="color:var(--success);font-size:16px">&#10003;</span>
+  Splits saved. Leaderboard and commission reports updated.
+</div>
+
+<script>
+const totalRev = 4200;
+
+function getRevPcts() {
+  return [parseInt(document.getElementById('rev-pct1').value)||0, parseInt(document.getElementById('rev-pct2').value)||0];
+}
+
+function updateRevDisplay() {
+  const [p1, p2] = getRevPcts();
+  const r1 = Math.round(totalRev * p1 / 100);
+  const r2 = totalRev - r1;
+  document.getElementById('rev-attr1').textContent = '$' + r1.toLocaleString();
+  document.getElementById('rev-attr2').textContent = '$' + r2.toLocaleString();
+  document.getElementById('panel-bar1').style.width = p1 + '%';
+  document.getElementById('panel-bar2').style.width = p2 + '%';
+  document.getElementById('rev-total').textContent = (p1+p2 === 100) ? '✓ 100%' : '⚠ ' + (p1+p2) + '%';
+  document.getElementById('rev-total').className = (p1+p2 === 100) ? 'total-valid' : 'total-invalid';
+
+  // Sync commission if matching job splits
+  if (typeof commMatchToggle !== 'undefined' && commMatchToggle && commTab !== 'lineitems') {
+    pullRevSplits(); refreshCommCalc();
+  }
+
+  // Update job card summary
+  document.getElementById('summary-pct1').textContent = p1 + '%';
+  document.getElementById('summary-pct2').textContent = p2 + '%';
+  document.getElementById('summary-rev1').textContent = '$' + r1.toLocaleString() + ' revenue';
+  document.getElementById('summary-rev2').textContent = '$' + r2.toLocaleString() + ' revenue';
+  document.getElementById('job-bar1').style.width = p1 + '%';
+  document.getElementById('job-bar2').style.width = p2 + '%';
+  document.getElementById('job-bar-label1').textContent = 'Marcus ' + p1 + '%';
+  document.getElementById('job-bar-label2').textContent = 'Jamie ' + p2 + '%';
+}
+
+function updateCommDisplay() {
+  // Legacy — updates job card summary commission values from pool calc
+  const pool = parseFloat(document.getElementById('c-pool').value) || 0;
+  const p1 = parseInt(document.getElementById('c-split1').textContent) || 0;
+  const a1 = pool * p1 / 100;
+  const a2 = pool * (100 - p1) / 100;
+  document.getElementById('summary-comm1').textContent = '$' + Math.round(a1).toLocaleString() + ' commission';
+  document.getElementById('summary-comm2').textContent = '$' + Math.round(a2).toLocaleString() + ' commission';
+}
+
+function adjustPct(tech, delta) {
+  const p1El = document.getElementById('rev-pct1');
+  const p2El = document.getElementById('rev-pct2');
+  if (tech === 1) {
+    let v = Math.min(100, Math.max(0, (parseInt(p1El.value)||0) + delta));
+    p1El.value = v;
+    p2El.value = 100 - v;
+  } else {
+    let v = Math.min(100, Math.max(0, (parseInt(p2El.value)||0) + delta));
+    p2El.value = v;
+    p1El.value = 100 - v;
+  }
+  updateRevDisplay();
+}
+
+function onRevInput() {
+  const p1 = parseInt(document.getElementById('rev-pct1').value)||0;
+  document.getElementById('rev-pct2').value = Math.max(0, 100 - p1);
+  updateRevDisplay();
+}
+
+function applyPreset(preset, chipEl) {
+  if (chipEl) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chipEl.classList.add('active');
+  }
+  const map = { first:[100,0], equal:[50,50], time:[69,31], custom:[60,40] };
+  const [p1] = map[preset];
+  document.getElementById('rev-pct1').value = p1;
+  document.getElementById('rev-pct2').value = 100 - p1;
+  updateRevDisplay();
+}
+
+function saveSplits() {
+  const confirm = document.getElementById('confirm-section');
+  confirm.classList.add('show');
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+  // Update unsaved badge
+  document.querySelectorAll('[style*="warning-bg"]').forEach(el => {
+    if (el.textContent === 'Unsaved') {
+      el.textContent = 'Saved';
+      el.style.background = 'var(--success-bg)';
+      el.style.color = 'var(--success)';
+    }
+  });
+}
+
+function scrollPanel() {
+  document.getElementById('panel-body').scrollTop = 0;
+  document.getElementById('split-panel').style.boxShadow = '0 0 0 2px var(--primary)';
+  setTimeout(() => { document.getElementById('split-panel').style.boxShadow = 'none'; }, 800);
+}
+
+// ── Figma Commissions card ──────────────────────────────
+let commBasis = 'revenue';
+let commTab = 'manual';
+let commMatchToggle = true;
+let commCardOpen = true;
+
+function toggleCommCard() {
+  commCardOpen = !commCardOpen;
+  document.getElementById('figma-comm-body').style.display = commCardOpen ? '' : 'none';
+  document.getElementById('comm-chev').innerHTML = commCardOpen ? '&#9650;' : '&#9660;';
+}
+
+function setCommBasis(basis) {
+  commBasis = basis;
+  document.getElementById('basis-rev').classList.toggle('active', basis === 'revenue');
+  document.getElementById('basis-gp').classList.toggle('active', basis === 'gross_profit');
+  document.getElementById('gp-metrics').style.display = basis === 'gross_profit' ? 'block' : 'none';
+  document.getElementById('comm-subtabs').style.display = basis === 'revenue' ? 'flex' : 'none';
+  if (basis === 'gross_profit') {
+    document.getElementById('comm-match-row').style.display = 'flex';
+    document.getElementById('comm-lineitems-content').style.display = 'none';
+    showCommContent(true);
+    document.getElementById('c-pool').value = 189;
+    setSplitValues(50, 50);
+    applyMatchToggleState();
+  } else {
+    commTab = 'manual';
+    document.getElementById('stab-manual').classList.add('active');
+    document.getElementById('stab-lineitems').classList.remove('active');
+    document.getElementById('comm-match-row').style.display = 'flex';
+    document.getElementById('comm-lineitems-content').style.display = 'none';
+    showCommContent(true);
+    document.getElementById('c-pool').value = 420;
+    applyMatchToggleState();
+  }
+  refreshCommCalc();
+}
+
+function setCommTab(tab) {
+  commTab = tab;
+  document.getElementById('stab-lineitems').classList.toggle('active', tab === 'lineitems');
+  document.getElementById('stab-manual').classList.toggle('active', tab === 'manual');
+  const isLineitems = (tab === 'lineitems');
+  document.getElementById('comm-match-row').style.display = isLineitems ? 'none' : 'flex';
+  document.getElementById('comm-lineitems-content').style.display = isLineitems ? 'block' : 'none';
+  showCommContent(!isLineitems);
+  if (!isLineitems) { applyMatchToggleState(); refreshCommCalc(); }
+}
+
+function onCommMatchToggle() {
+  commMatchToggle = document.getElementById('comm-match-toggle').checked;
+  applyMatchToggleState();
+  if (commMatchToggle) pullRevSplits();
+  refreshCommCalc();
+  updateCommDisplay();
+}
+
+function applyMatchToggleState() {
+  document.getElementById('c-split1').style.display = commMatchToggle ? 'inline' : 'none';
+  document.getElementById('c-split2').style.display = commMatchToggle ? 'inline' : 'none';
+  document.getElementById('c-stepper1').style.display = commMatchToggle ? 'none' : 'flex';
+  document.getElementById('c-stepper2').style.display = commMatchToggle ? 'none' : 'flex';
+  if (commMatchToggle) pullRevSplits();
+}
+
+function showCommContent(show) {
+  ['comm-pool-row','comm-work-table','comm-subtotal-row','comm-payout-row'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+}
+
+function showCommSteppers(show) {
+  document.getElementById('c-split1').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-split2').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-stepper1').style.display = show ? 'flex' : 'none';
+  document.getElementById('c-stepper2').style.display = show ? 'flex' : 'none';
+}
+
+function adjustCommSplit(tech, delta) {
+  const v1 = parseInt(document.getElementById('c-split1-in').value) || 0;
+  if (tech === 1) {
+    const nv = Math.min(100, Math.max(0, v1 + delta));
+    document.getElementById('c-split1-in').value = nv;
+    document.getElementById('c-split2-in').value = 100 - nv;
+  } else {
+    const v2 = parseInt(document.getElementById('c-split2-in').value) || 0;
+    const nv = Math.min(100, Math.max(0, v2 + delta));
+    document.getElementById('c-split2-in').value = nv;
+    document.getElementById('c-split1-in').value = 100 - nv;
+  }
+  refreshCommCalc();
+  updateCommDisplay();
+}
+
+function onCommSplitInput(tech) {
+  if (tech === 1) {
+    const v1 = parseInt(document.getElementById('c-split1-in').value) || 0;
+    document.getElementById('c-split2-in').value = Math.max(0, 100 - v1);
+  } else {
+    const v2 = parseInt(document.getElementById('c-split2-in').value) || 0;
+    document.getElementById('c-split1-in').value = Math.max(0, 100 - v2);
+  }
+  refreshCommCalc();
+  updateCommDisplay();
+}
+
+function pullRevSplits() {
+  const el1 = document.getElementById('rev-pct1');
+  const p1 = el1 ? (parseInt(el1.value) || 50) : 50;
+  setSplitValues(p1, 100 - p1);
+}
+
+function setSplitValues(p1, p2) {
+  document.getElementById('c-split1').textContent = p1 + '%';
+  document.getElementById('c-split2').textContent = p2 + '%';
+  document.getElementById('c-split1-in').value = p1;
+  document.getElementById('c-split2-in').value = p2;
+}
+
+function onCommPool() { refreshCommCalc(); updateCommDisplay(); }
+
+function refreshCommCalc() {
+  const pool = parseFloat(document.getElementById('c-pool').value) || 0;
+  const useSpan = commMatchToggle;
+  const p1 = useSpan
+    ? (parseInt(document.getElementById('c-split1').textContent) || 0)
+    : (parseInt(document.getElementById('c-split1-in').value) || 0);
+  const p2 = 100 - p1;
+  const a1 = pool * p1 / 100;
+  const a2 = pool * p2 / 100;
+  document.getElementById('c-amount1').textContent = '$' + a1.toFixed(2);
+  document.getElementById('c-amount2').textContent = '$' + a2.toFixed(2);
+  document.getElementById('c-total1').textContent = '$' + a1.toFixed(2);
+  document.getElementById('c-total2').textContent = '$' + a2.toFixed(2);
+  const sub = a1 + a2;
+  document.getElementById('c-subtotal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('c-payout').textContent = '$' + sub.toFixed(2);
+}
+
+// Init
+updateRevDisplay();
+pullRevSplits();
+applyMatchToggleState();
+refreshCommCalc();
+updateCommDisplay();
+</script>
+</body>
+</html>

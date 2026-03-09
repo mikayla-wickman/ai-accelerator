@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype 4 — Team Tab | Job Splits</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #0057ff;
+  --primary-dark: #0046cc;
+  --primary-light: #e8f0ff;
+  --bg-page: #fafafa;
+  --surface: #ffffff;
+  --text-primary: #15181d;
+  --text-muted: #6b7487;
+  --border: #e1e6f2;
+  --success: #00a344;
+  --success-bg: #e6f7ee;
+  --warning: #bf8600;
+  --warning-bg: #fff8e1;
+  --error: #d81860;
+  --error-bg: #fdeef4;
+  --ai: #623cc9;
+  --ai-bg: #f0ebfc;
+  --radius: 8px;
+  --font: 'Open Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg-page); color: var(--text-primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 14px; }
+
+/* Proto banner */
+.proto-banner { background: var(--primary); color: white; padding: 7px 24px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.proto-banner a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 400; }
+.proto-banner a:hover { color: white; text-decoration: underline; }
+.proto-tag { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 10px; }
+
+/* Shell */
+.app-shell { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 216px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.logo-mark { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; }
+.logo-text { font-size: 15px; font-weight: 700; }
+.sidebar-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+.nav-section { padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 20px; font-size: 13px; color: var(--text-muted); cursor: pointer; border-left: 2px solid transparent; }
+.nav-item:hover { background: #f5f7ff; color: var(--text-primary); }
+.nav-item.active { color: var(--primary); font-weight: 600; background: var(--primary-light); border-left-color: var(--primary); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.breadcrumb a { color: var(--primary); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--border); }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.avatar-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.avatar-sm { width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+/* Content area */
+.content { flex: 1; overflow-y: auto; padding: 24px 32px; }
+
+/* Screens */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* Journey */
+.journey { display: flex; align-items: center; padding: 10px 0; margin-bottom: 20px; }
+.j-step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.j-step:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: calc(50% + 14px); right: calc(-50% + 14px); height: 2px; }
+.line-done::after { background: var(--success) !important; }
+.line-active::after { background: linear-gradient(90deg, var(--success), var(--border)) !important; }
+.line-future::after { background: var(--border) !important; }
+.j-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; z-index: 1; }
+.j-dot-done { background: var(--success); color: white; }
+.j-dot-active { background: var(--primary); color: white; box-shadow: 0 0 0 4px var(--primary-light); }
+.j-dot-future { background: var(--border); color: var(--text-muted); }
+.j-label { font-size: 10px; color: var(--text-muted); margin-top: 5px; text-align: center; font-weight: 600; line-height: 1.3; }
+.j-label-active { color: var(--primary); }
+
+/* Job header */
+.job-number { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.job-title { font-size: 22px; font-weight: 400; margin-bottom: 8px; }
+.job-meta-row { display: flex; align-items: center; gap: 14px; margin-bottom: 0; }
+.job-meta-item { font-size: 13px; color: var(--text-muted); }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-muted { background: var(--bg-page); color: var(--text-muted); border: 1px solid var(--border); }
+.badge-ai { background: var(--ai-bg); color: var(--ai); }
+
+/* Page-level tabs (job detail tabs) */
+.job-tabs { display: flex; border-bottom: 2px solid var(--border); margin-top: 20px; }
+.job-tab { padding: 12px 22px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: color 0.12s; }
+.job-tab:hover { color: var(--text-primary); }
+.job-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+
+/* Tab panels */
+.tab-panel { display: none; padding-top: 24px; }
+.tab-panel.active { display: block; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+
+/* Team tab layout: single column */
+.team-layout { display: block; }
+
+/* Tooltip */
+.tooltip-wrap { position: relative; display: inline-flex; align-items: center; gap: 5px; }
+.tooltip-icon { width: 15px; height: 15px; border-radius: 50%; background: var(--border); color: var(--text-muted); font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: default; flex-shrink: 0; line-height: 1; }
+.tooltip-wrap:hover .tooltip-box { display: block; }
+.tooltip-box { display: none; position: absolute; bottom: calc(100% + 8px); left: 0; background: #1a1f2e; color: white; font-size: 12px; line-height: 1.5; padding: 9px 13px; border-radius: 6px; width: 300px; z-index: 200; font-weight: 400; pointer-events: none; }
+.tooltip-box::after { content: ''; position: absolute; top: 100%; left: 12px; border: 5px solid transparent; border-top-color: #1a1f2e; }
+
+/* Section heading */
+.section-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.section-heading-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+.section-heading-line { flex: 1; height: 1px; background: var(--border); }
+
+/* Preset chips */
+.chips-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+.chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+/* Split table */
+.split-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+.split-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 0 10px; border-bottom: 1px solid var(--border); }
+.split-table th.right { text-align: right; }
+.split-table td { padding: 14px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.split-table tr:last-child td { border-bottom: none; }
+.tech-cell { display: flex; align-items: center; gap: 10px; }
+.tech-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.tech-name { font-size: 14px; font-weight: 600; }
+.tech-meta { font-size: 12px; color: var(--text-muted); }
+
+/* Stepper input */
+.stepper { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; width: fit-content; }
+.stepper-btn { width: 30px; height: 34px; background: var(--bg-page); border: none; font-size: 16px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-family: var(--font); transition: all 0.1s; }
+.stepper-btn:hover:not(:disabled) { background: var(--primary-light); color: var(--primary); }
+.stepper-btn:disabled { opacity: 0.35; cursor: default; }
+.stepper-val { width: 48px; height: 34px; border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border); text-align: center; font-size: 13px; font-weight: 700; font-family: var(--font); color: var(--text-primary); background: white; }
+.stepper-val:focus { outline: none; background: var(--primary-light); }
+.stepper-val:disabled { color: var(--text-muted); background: var(--bg-page); }
+.stepper-val.ai-color { color: var(--ai); }
+
+.rev-amount { font-size: 14px; font-weight: 700; text-align: right; }
+.comm-amount { font-size: 13px; font-weight: 700; color: var(--ai); text-align: right; }
+
+/* Split bar */
+.split-bar-wrap { margin-bottom: 4px; }
+.split-bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; display: flex; }
+.split-seg { height: 100%; transition: width 0.3s ease; }
+.split-bar-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; font-weight: 600; }
+
+/* Total row */
+.total-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border); }
+.total-valid { color: var(--success); font-size: 12px; font-weight: 700; }
+.total-invalid { color: var(--error); font-size: 12px; font-weight: 700; }
+
+/* Link toggle */
+.link-toggle-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin: 20px 0 0; }
+.link-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.link-toggle-label { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.link-toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: all 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: all 0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--ai); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Commission section */
+.comm-section { margin-top: 16px; }
+.comm-table { width: 100%; border-collapse: collapse; }
+.comm-table td { padding: 12px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.comm-table tr:last-child td { border-bottom: none; }
+
+/* Buttons */
+.btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { background: #b3c8ff; cursor: not-allowed; }
+.btn-outlined { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outlined:hover { background: var(--primary-light); }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.btn-text { background: transparent; color: var(--primary); padding: 5px 8px; font-size: 12px; }
+.btn-text:hover { background: var(--primary-light); }
+.btn-actions { display: flex; align-items: center; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border); margin-top: 20px; }
+
+.impact-body { padding: 16px 18px; }
+.impact-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.impact-row:last-child { border-bottom: none; }
+.impact-name { font-size: 13px; font-weight: 600; flex: 1; }
+.impact-rev { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.impact-comm { font-size: 12px; color: var(--ai); font-weight: 600; }
+.impact-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; display: flex; margin: 10px 0 2px; }
+.impact-seg { height: 100%; transition: width 0.3s; }
+.impact-note { font-size: 11px; color: var(--text-muted); padding: 12px 18px; border-top: 1px solid var(--border); background: var(--bg-page); line-height: 1.5; }
+
+/* Info banner */
+.info-banner { display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; border-radius: 6px; font-size: 13px; line-height: 1.5; margin-bottom: 14px; }
+.info-banner-info { background: var(--primary-light); }
+.info-banner-warn { background: var(--warning-bg); }
+
+/* Saved state */
+.saved-badge { display: none; align-items: center; gap: 5px; font-size: 12px; color: var(--success); font-weight: 600; }
+.saved-badge.show { display: flex; }
+
+/* Toast */
+.toast { position: fixed; bottom: 28px; right: 28px; background: var(--text-primary); color: white; padding: 12px 20px; border-radius: var(--radius); font-size: 13px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all 0.25s; z-index: 1000; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Overview tab content */
+.info-dl { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.info-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+.info-value { font-size: 14px; }
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+.grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+/* Settings screen */
+.settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.settings-sidebar { border-right: 1px solid var(--border); padding: 12px 0; }
+.settings-nav-section { padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.settings-nav-item { padding: 9px 20px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.settings-nav-item:hover { background: var(--bg-page); color: var(--text-primary); }
+.settings-nav-item.active { color: var(--primary); font-weight: 600; background: var(--primary-light); border-left: 2px solid var(--primary); }
+.settings-main { padding: 28px 32px; }
+.settings-header { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.settings-header h2 { font-size: 18px; font-weight: 400; margin-bottom: 6px; }
+.settings-header p { font-size: 13px; color: var(--text-muted); line-height: 1.5; max-width: 520px; }
+.option-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.option-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; cursor: pointer; transition: all 0.12s; display: flex; align-items: flex-start; gap: 12px; }
+.option-card:hover { border-color: var(--primary); background: #fafcff; }
+.option-card.selected { border-color: var(--primary); background: var(--primary-light); }
+.option-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+.option-card.selected .option-radio { border-color: var(--primary); background: var(--primary); }
+.option-card.selected .option-radio::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
+.option-label { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.option-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+.option-example { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 5px; background: white; border: 1px solid rgba(0,87,255,0.2); padding: 3px 8px; border-radius: 4px; display: inline-block; }
+
+/* Commission default toggle in settings */
+.settings-comm-section { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-top: 4px; margin-bottom: 20px; }
+.settings-comm-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.settings-comm-label { font-size: 14px; font-weight: 600; margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+.settings-comm-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+/* Figma-style Commissions card */
+.figma-comm-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-top:20px; margin-bottom:16px; }
+.figma-comm-header { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; cursor:pointer; background:var(--bg-page); border-bottom:1px solid var(--border); }
+.figma-comm-header:hover { background:#f0ebfc; }
+.figma-comm-basis { display:flex; align-items:center; gap:8px; padding:10px 18px; border-bottom:1px solid var(--border); background:#fafcff; flex-wrap:wrap; }
+.basis-btn { background:transparent; border:1px solid var(--border); border-radius:4px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); color:var(--text-muted); transition:all 0.15s; }
+.basis-btn.active { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
+.basis-btn:hover:not(.active) { background:var(--bg-page); }
+.figma-stab { background:transparent; border:none; border-bottom:2px solid transparent; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); color:var(--text-muted); margin-bottom:-2px; }
+.figma-stab.active { color:var(--primary); border-bottom-color:var(--primary); }
+.figma-stab:hover:not(.active) { color:var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div class="proto-banner">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="proto-tag">PROTOTYPE 4 OF 4</span>
+    <strong>The Team Tab</strong>
+    <span style="font-weight:400;color:rgba(255,255,255,0.7)">— Org defaults + unified splits + commission linking, all in a dedicated job tab</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="prototype-3.html">&#8592; Prev prototype</a>
+    <a href="index.html">&#8592; Back to comparison</a>
+  </div>
+</div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">H</div>
+      <span class="logo-text">Housecall Pro</span>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9783;</span> Dashboard</div>
+      <div class="nav-item active" id="nav-jobs"><span class="nav-icon">&#128198;</span> Jobs</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Customers</div>
+      <div class="nav-item"><span class="nav-icon">&#128196;</span> Estimates</div>
+      <div class="nav-item"><span class="nav-icon">&#128176;</span> Invoices</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Schedule</div>
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item"><span class="nav-icon">&#128202;</span> Reports</div>
+      <div class="nav-section">Company</div>
+      <div class="nav-item" id="nav-settings"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="breadcrumb" id="breadcrumb">
+        <a href="#">Jobs</a>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <span>Job #1847</span>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <span>Team</span>
+      </div>
+      <div class="topbar-right">
+        <div style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px">
+          <span>Org default:</span>
+          <span style="font-weight:600;color:var(--primary)" id="topbar-default-label">Equal Split</span>
+          <button class="btn btn-text" onclick="goToSettings()" style="padding:3px 8px;font-size:11px">Configure &#8599;</button>
+        </div>
+        <div class="avatar-chip">
+          <div class="avatar-sm">AK</div>
+          Alpine HVAC
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- SCREEN 1: JOB DETAILS (default view) -->
+      <div class="screen active" id="screen-job">
+
+        <!-- Job header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
+          <div>
+            <div class="job-number">Job #1847</div>
+            <div class="job-title">HVAC Replacement &amp; Duct Sealing</div>
+            <div class="job-meta-row">
+              <span class="badge badge-success">Completed</span>
+              <span class="job-meta-item">&#128197; Mar 5, 2026</span>
+              <span class="job-meta-item">&#128101; Rodriguez Residence</span>
+              <span class="job-meta-item">&#128176; $4,200.00</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost">Print Invoice</button>
+            <button class="btn btn-outlined">Edit Job</button>
+          </div>
+        </div>
+
+        <!-- Job tabs -->
+        <div class="job-tabs">
+          <div class="job-tab" onclick="switchTab('overview')">Overview</div>
+          <div class="job-tab" onclick="switchTab('schedule')">Schedule</div>
+          <div class="job-tab active" onclick="switchTab('team')" id="tab-team">
+            Team &amp; Splits
+            <div class="tab-pip" id="tab-pip" title="Splits not yet saved"></div>
+          </div>
+          <div class="job-tab" onclick="switchTab('invoice')">Invoice</div>
+          <div class="job-tab" onclick="switchTab('photos')">Photos</div>
+          <div class="job-tab" onclick="switchTab('notes')">Notes</div>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div class="tab-panel" id="panel-overview">
+          <div class="grid-2">
+            <div class="card">
+              <div style="font-size:14px;font-weight:600;margin-bottom:14px">Job Details</div>
+              <div class="info-dl">
+                <div><div class="info-label">Job Type</div><div class="info-value">HVAC Installation</div></div>
+                <div><div class="info-label">Invoice Total</div><div class="info-value" style="font-size:20px;font-weight:400">$4,200.00</div></div>
+                <div><div class="info-label">Completed</div><div class="info-value">Mar 5, 2026 3:47 PM</div></div>
+                <div><div class="info-label">Time Logged</div><div class="info-value">8h 0m total</div></div>
+              </div>
+              <div class="divider"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                  <div class="info-label">Team Splits</div>
+                  <div style="font-size:13px;color:var(--text-muted);margin-top:2px">Equal Split (org default) &middot; Unsaved</div>
+                </div>
+                <button class="btn btn-outlined" style="font-size:12px;padding:6px 12px" onclick="switchTab('team')">Review splits &#8594;</button>
+              </div>
+            </div>
+            <div class="card">
+              <div style="font-size:14px;font-weight:600;margin-bottom:12px">Customer</div>
+              <div style="font-size:15px;font-weight:600;margin-bottom:2px">Maria Rodriguez</div>
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">rodriguez.residence@email.com</div>
+              <div class="divider"></div>
+              <div class="info-label">Service Address</div>
+              <div style="font-size:13px;margin-top:3px">742 Evergreen Terrace<br>Springfield, CO 80907</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCHEDULE TAB -->
+        <div class="tab-panel" id="panel-schedule">
+          <div class="card"><div style="color:var(--text-muted);font-size:13px">Schedule details would appear here.</div></div>
+        </div>
+
+        <!-- TEAM TAB — main feature -->
+        <div class="tab-panel active" id="panel-team">
+
+          <!-- Split controls -->
+          <div class="team-layout">
+
+            <!-- Left: split controls -->
+            <div>
+              <div class="card" style="margin-bottom:16px">
+
+                <!-- Split method -->
+                <div class="section-heading" style="margin-bottom:12px">
+                  <div class="section-heading-title">Split method</div>
+                  <div class="section-heading-line"></div>
+                </div>
+                <div class="chips-row">
+                  <div class="chip" id="chip-first" onclick="applyPreset('first',this)">All to First Assigned</div>
+                  <div class="chip active" id="chip-equal" onclick="applyPreset('equal',this)">Equal Split</div>
+                  <div class="chip" id="chip-time" onclick="applyPreset('time',this)">Proportional to Time</div>
+                  <div class="chip" id="chip-custom" onclick="applyPreset('custom',this)">Custom</div>
+                </div>
+
+                <!-- Revenue section -->
+                <div class="section-heading">
+                  <div class="tooltip-wrap">
+                    <div class="section-heading-title">Revenue Attribution</div>
+                    <div class="tooltip-icon">i</div>
+                    <div class="tooltip-box">These percentages determine how $4,200.00 is attributed to each technician in the Tech Leaderboard and performance reports. Not visible to field technicians.</div>
+                  </div>
+                  <div class="section-heading-line"></div>
+                </div>
+
+                <table class="split-table">
+                  <thead>
+                    <tr>
+                      <th style="width:40%">Technician</th>
+                      <th>Time logged</th>
+                      <th>Split %</th>
+                      <th class="right">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="tech-cell">
+                          <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
+                          <div>
+                            <div class="tech-name">Marcus Webb</div>
+                            <div class="tech-meta">Lead Technician</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style="color:var(--text-muted);font-size:13px">5h 30m</td>
+                      <td>
+                        <div class="stepper">
+                          <button class="stepper-btn" id="rev-minus1" onclick="adjustRev(1,-5)">&#8722;</button>
+                          <input class="stepper-val" id="rev-pct1" type="number" value="50" min="0" max="100" oninput="onRevInput()" onchange="onRevInput()">
+                          <button class="stepper-btn" id="rev-plus1" onclick="adjustRev(1,5)">+</button>
+                        </div>
+                      </td>
+                      <td class="rev-amount" id="rev-amt1">$2,100</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="tech-cell">
+                          <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
+                          <div>
+                            <div class="tech-name">Jamie Torres</div>
+                            <div class="tech-meta">Technician</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style="color:var(--text-muted);font-size:13px">2h 30m</td>
+                      <td>
+                        <div class="stepper">
+                          <button class="stepper-btn" id="rev-minus2" onclick="adjustRev(2,-5)">&#8722;</button>
+                          <input class="stepper-val" id="rev-pct2" type="number" value="50" min="0" max="100" disabled oninput="onRevInput()" onchange="onRevInput()">
+                          <button class="stepper-btn" id="rev-plus2" onclick="adjustRev(2,5)">+</button>
+                        </div>
+                      </td>
+                      <td class="rev-amount" id="rev-amt2">$2,100</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Visual bar -->
+                <div class="split-bar-wrap">
+                  <div class="split-bar">
+                    <div class="split-seg" id="rev-bar1" style="width:50%;background:var(--primary)"></div>
+                    <div class="split-seg" id="rev-bar2" style="width:50%;background:var(--success)"></div>
+                  </div>
+                  <div class="split-bar-labels">
+                    <span id="rev-bar-label1" style="color:var(--primary)">Marcus 50%</span>
+                    <span id="rev-bar-label2" style="color:var(--success)">Jamie 50%</span>
+                  </div>
+                </div>
+                <div class="total-row">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:12px;font-weight:700;color:var(--text-muted)">Total attributed</span>
+                    <span id="rev-total-status" class="total-valid">&#10003; 100%</span>
+                  </div>
+                  <span style="font-size:15px;font-weight:700">$4,200.00</span>
+                </div>
+              </div>
+
+              <!-- Commissions card -->
+              <div class="figma-comm-card">
+                  <div class="figma-comm-header" onclick="toggleCommCard()">
+                    <span style="font-weight:700;font-size:14px;color:var(--ai)">Commissions</span>
+                    <span id="comm-chev" style="font-size:11px;color:var(--text-muted)">&#9650;</span>
+                  </div>
+                  <div id="figma-comm-body">
+                    <div class="figma-comm-basis">
+                      <span style="font-size:13px;color:var(--text-muted)">Commission basis:</span>
+                      <div style="display:flex;gap:4px">
+                        <button id="basis-rev" class="basis-btn active" onclick="setCommBasis('revenue')">Revenue</button>
+                        <button id="basis-gp" class="basis-btn" onclick="setCommBasis('gross_profit')">Gross profit</button>
+                      </div>
+                      <a href="#" style="margin-left:auto;font-size:12px;color:var(--primary);text-decoration:none">Manage pay ↗</a>
+                    </div>
+                    <div id="gp-metrics" style="display:none;padding:12px 18px;background:#f5f8ff;border-bottom:1px solid var(--border)">
+                      <div style="display:flex;gap:28px">
+                        <div>
+                          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Adjusted gross profit</div>
+                          <div style="font-size:17px;font-weight:700">$1,890.00</div>
+                        </div>
+                        <div>
+                          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Gross profit total</div>
+                          <div style="font-size:17px;font-weight:700">$2,100.00</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="comm-subtabs" style="display:flex;border-bottom:2px solid var(--border);padding:0 18px;gap:4px">
+                      <button id="stab-lineitems" class="figma-stab" onclick="setCommTab('lineitems')">Line items</button>
+                      <button id="stab-manual" class="figma-stab active" onclick="setCommTab('manual')">Manual splits</button>
+                    </div>
+                    <div id="comm-match-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);background:#fafcff">
+                      <div>
+                        <div style="font-size:13px;font-weight:600">Match job splits</div>
+                        <div style="font-size:12px;color:var(--text-muted)">Mirror the revenue attribution percentages above</div>
+                      </div>
+                      <label class="toggle">
+                        <input type="checkbox" id="comm-match-toggle" checked onchange="onCommMatchToggle()">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                    <div id="comm-lineitems-content" style="display:none;padding:28px 18px;text-align:center;color:var(--text-muted);font-size:13px">
+                      Line item commission breakdown coming soon
+                    </div>
+                    <div id="comm-pool-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border)">
+                      <span style="font-size:12px;font-weight:600;color:var(--text-muted)">Commission pool</span>
+                      <div style="display:flex;align-items:center;gap:4px">
+                        <span style="font-size:13px;color:var(--text-muted)">$</span>
+                        <input id="c-pool" type="number" value="420" style="width:74px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:13px;text-align:right" oninput="onCommPool()">
+                      </div>
+                    </div>
+                    <table id="comm-work-table" style="width:100%;border-collapse:collapse;font-size:13px">
+                      <thead>
+                        <tr style="background:var(--bg-page)">
+                          <th style="text-align:left;padding:8px 18px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Work by</th>
+                          <th style="text-align:center;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Split</th>
+                          <th style="text-align:right;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Amount</th>
+                          <th style="text-align:center;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Rate</th>
+                          <th style="text-align:right;padding:8px 18px 8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style="padding:10px 18px;border-bottom:1px solid var(--border)">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <div style="width:26px;height:26px;border-radius:50%;background:#e8f0ff;color:#0057ff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">MW</div>
+                              <span style="font-weight:600">Marcus Webb</span>
+                            </div>
+                          </td>
+                          <td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)">
+                            <span id="c-split1" style="font-weight:700;color:var(--ai);font-size:14px">50%</span>
+                            <div id="c-stepper1" style="display:none;align-items:center;gap:2px;justify-content:center">
+                              <button onclick="adjustCommSplit(1,-5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
+                              <input id="c-split1-in" type="number" min="0" max="100" value="50" style="width:38px;padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font);text-align:center;color:var(--ai);font-weight:700" oninput="onCommSplitInput(1)">
+                              <button onclick="adjustCommSplit(1,5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
+                            </div>
+                          </td>
+                          <td style="padding:10px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-amount1">$210.00</span></td>
+                          <td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
+                          <td style="padding:10px 18px 10px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-total1" style="font-weight:600">$210.00</span></td>
+                        </tr>
+                        <tr>
+                          <td style="padding:10px 18px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <div style="width:26px;height:26px;border-radius:50%;background:#e6f7ee;color:#00a344;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">JT</div>
+                              <span style="font-weight:600">Jamie Torres</span>
+                            </div>
+                          </td>
+                          <td style="padding:10px 8px;text-align:center">
+                            <span id="c-split2" style="font-weight:700;color:var(--ai);font-size:14px">50%</span>
+                            <div id="c-stepper2" style="display:none;align-items:center;gap:2px;justify-content:center">
+                              <button onclick="adjustCommSplit(2,-5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
+                              <input id="c-split2-in" type="number" min="0" max="100" value="50" style="width:38px;padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font);text-align:center;color:var(--ai);font-weight:700" oninput="onCommSplitInput(2)">
+                              <button onclick="adjustCommSplit(2,5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
+                            </div>
+                          </td>
+                          <td style="padding:10px 8px;text-align:right"><span id="c-amount2">$210.00</span></td>
+                          <td style="padding:10px 8px;text-align:center"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
+                          <td style="padding:10px 18px 10px 8px;text-align:right"><span id="c-total2" style="font-weight:600">$210.00</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div id="comm-subtotal-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 6px;margin:4px 18px 0;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border)">
+                      <span>Work commission subtotal</span>
+                      <span id="c-subtotal" style="text-align:right">$420.00</span>
+                    </div>
+                    <div id="comm-payout-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 16px;margin:0 18px;font-size:15px;font-weight:700">
+                      <span>Commission payout</span>
+                      <span id="c-payout" style="color:var(--ai);text-align:right">$420.00</span>
+                    </div>
+                  </div>
+                </div>
+
+              <!-- Save actions -->
+              <div class="btn-actions">
+                <button class="btn btn-primary" id="save-btn" onclick="saveSplits()">Save Revenue &amp; Commission Splits</button>
+                <button class="btn btn-ghost" onclick="resetToDefault()">Reset to org default</button>
+                <div id="saved-badge" class="saved-badge">&#10003; Saved</div>
+                <div id="error-note" style="display:none;font-size:12px;color:var(--error);font-weight:600">&#9888; Total must equal 100%</div>
+              </div>
+
+            </div>
+
+          </div><!-- /team-layout -->
+        </div><!-- /panel-team -->
+
+        <!-- INVOICE TAB -->
+        <div class="tab-panel" id="panel-invoice">
+          <div class="card"><div style="color:var(--text-muted);font-size:13px">Invoice details would appear here.</div></div>
+        </div>
+        <div class="tab-panel" id="panel-photos">
+          <div class="card"><div style="color:var(--text-muted);font-size:13px">Photos would appear here.</div></div>
+        </div>
+        <div class="tab-panel" id="panel-notes">
+          <div class="card"><div style="color:var(--text-muted);font-size:13px">Notes would appear here.</div></div>
+        </div>
+
+      </div><!-- /screen-job -->
+
+      <!-- SCREEN 2: SETTINGS -->
+      <div class="screen" id="screen-settings">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <div style="font-size:22px;font-weight:400;margin-bottom:4px">Settings</div>
+            <div style="font-size:13px;color:var(--text-muted)">Configure org-wide defaults. Individual jobs can always be overridden from the Team tab.</div>
+          </div>
+          <button class="btn btn-outlined" onclick="goToJob()">&#8592; Back to Job #1847</button>
+        </div>
+
+        <div class="settings-layout">
+          <div class="settings-sidebar">
+            <div class="settings-nav-section">Team</div>
+            <div class="settings-nav-item">Employees</div>
+            <div class="settings-nav-item">Roles &amp; Permissions</div>
+            <div class="settings-nav-item active">Job Splits</div>
+            <div class="settings-nav-item">Commissions</div>
+            <div class="settings-nav-item">Time Tracking</div>
+            <div class="settings-nav-section">Reports</div>
+            <div class="settings-nav-item">Tech Leaderboard</div>
+            <div class="settings-nav-section">Payments</div>
+            <div class="settings-nav-item">Payroll Settings</div>
+          </div>
+
+          <div class="settings-main">
+            <div class="settings-header">
+              <h2>Job Split Defaults</h2>
+              <p>This default applies automatically to all new jobs with multiple technicians. Owners and admins can override the split on any individual job from the <strong>Team tab</strong> on the job details page.</p>
+            </div>
+
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">Default revenue split method</div>
+            <div class="option-list" id="settings-options">
+              <div class="option-card" id="set-opt-first" onclick="selectSettingsOption('first')">
+                <div class="option-radio"></div>
+                <div>
+                  <div class="option-label">All to First Assigned</div>
+                  <div class="option-desc">100% of revenue attributed to the first technician. Others receive 0%.</div>
+                  <span class="option-example">Marcus: 100% / Jamie: 0%</span>
+                </div>
+              </div>
+              <div class="option-card selected" id="set-opt-equal" onclick="selectSettingsOption('equal')">
+                <div class="option-radio"></div>
+                <div>
+                  <div class="option-label">Equal Split</div>
+                  <div class="option-desc">Revenue divided evenly among all assigned technicians at completion.</div>
+                  <span class="option-example">2 techs: 50% / 50% &nbsp;&middot;&nbsp; 3 techs: 33% / 33% / 33%</span>
+                </div>
+              </div>
+              <div class="option-card" id="set-opt-time" onclick="selectSettingsOption('time')">
+                <div class="option-radio"></div>
+                <div>
+                  <div class="option-label">Proportional to Time Logged &#9201;</div>
+                  <div class="option-desc">Revenue split based on hours clocked per tech. Requires time tracking.</div>
+                  <span class="option-example">Marcus 5.5h (69%) / Jamie 2.5h (31%) on an 8h job</span>
+                </div>
+              </div>
+              <div class="option-card" id="set-opt-manual" onclick="selectSettingsOption('manual')">
+                <div class="option-radio"></div>
+                <div>
+                  <div class="option-label">No default — set manually per job</div>
+                  <div class="option-desc">Jobs will show splits as "Pending" until an admin sets them in the Team tab.</div>
+                  <span class="option-example">Team tab will prompt admin on each completed job</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;margin-top:20px">Commission defaults</div>
+            <div class="settings-comm-section">
+              <div class="settings-comm-row">
+                <div style="flex:1">
+                  <div class="settings-comm-label"><span style="color:var(--ai)">&#128279;</span> Link commission splits to revenue splits by default</div>
+                  <div class="settings-comm-desc">When on, new jobs will start with commissions mirroring revenue splits. Admins can always decouple on individual jobs via the Team tab toggle.</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="settings-comm-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="info-banner info-banner-warn">
+              <span style="font-size:15px;flex-shrink:0">&#9888;</span>
+              <span style="font-size:13px">Changes apply to <strong>new jobs only</strong>. Existing jobs with saved splits won't be affected unless manually updated from the Team tab.</span>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <button class="btn btn-primary" onclick="saveSettings()">Save defaults</button>
+              <button class="btn btn-ghost" onclick="goToJob()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /screen-settings -->
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<div class="toast" id="toast">
+  <span style="color:var(--success);font-size:16px">&#10003;</span>
+  <span id="toast-msg">Splits saved. Leaderboard and commission reports updated.</span>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+const TOTAL_REV = 4200;
+const ORG_DEFAULTS = { first:[100,0], equal:[50,50], time:[69,31], manual:[50,50] };
+let orgDefault = 'equal';
+let orgDefaultLabel = 'Equal Split';
+let isOverridden = false;
+let isSaved = false;
+
+// ── Tab navigation ─────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.job-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const tab = document.querySelector(`.job-tab[onclick*="${name}"]`);
+  if (tab) tab.classList.add('active');
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+}
+
+// ── Screen navigation ──────────────────────────────────
+function goToSettings() {
+  document.getElementById('screen-job').classList.remove('active');
+  document.getElementById('screen-settings').classList.add('active');
+  document.getElementById('breadcrumb').innerHTML = '<a href="#">Settings</a><span class="breadcrumb-sep">›</span><span>Team</span><span class="breadcrumb-sep">›</span><span>Job Splits</span>';
+  document.getElementById('nav-jobs').classList.remove('active');
+  document.getElementById('nav-settings').classList.add('active');
+}
+
+function goToJob() {
+  document.getElementById('screen-settings').classList.remove('active');
+  document.getElementById('screen-job').classList.add('active');
+  document.getElementById('breadcrumb').innerHTML = '<a href="#">Jobs</a><span class="breadcrumb-sep">›</span><span>Job #1847</span><span class="breadcrumb-sep">›</span><span>Team</span>';
+  document.getElementById('nav-settings').classList.remove('active');
+  document.getElementById('nav-jobs').classList.add('active');
+  switchTab('team');
+}
+
+// ── Settings ───────────────────────────────────────────
+const SETTINGS_LABELS = { first:'All to First Assigned', equal:'Equal Split', time:'Proportional to Time', manual:'No default — manual per job' };
+
+function selectSettingsOption(key) {
+  document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('set-opt-' + key).classList.add('selected');
+  orgDefault = key;
+}
+
+function saveSettings() {
+  orgDefaultLabel = SETTINGS_LABELS[orgDefault];
+  document.getElementById('topbar-default-label').textContent = orgDefaultLabel;
+  showToast('Default saved: ' + orgDefaultLabel + ' will apply to new jobs.');
+  setTimeout(goToJob, 1400);
+  // If not overridden, update job to reflect new default
+  if (!isOverridden) {
+    applyPreset(orgDefault, null);
+  }
+}
+
+// ── Preset application ─────────────────────────────────
+const PRESET_VALUES = { first:[100,0], equal:[50,50], time:[69,31], custom:[60,40] };
+const PRESET_LABELS = { first:'All to First Assigned', equal:'Equal Split', time:'Proportional to Time', custom:'Custom' };
+
+function applyPreset(key, clickedChip) {
+  // Update chips
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  const chipEl = document.getElementById('chip-' + key);
+  if (chipEl) chipEl.classList.add('active');
+
+  const [p1] = PRESET_VALUES[key];
+  const p2 = 100 - p1;
+
+  // Custom enables free edit of pct1; others auto-balance pct2 from pct1
+  setRevPcts(p1, p2, key === 'custom');
+  updateDisplay();
+
+  // Check if this differs from org default
+  const defaultPcts = PRESET_VALUES[orgDefault] || PRESET_VALUES['equal'];
+  const currPcts = [p1, p2];
+  const differs = (currPcts[0] !== defaultPcts[0] || currPcts[1] !== defaultPcts[1]);
+  setOverrideState(differs, PRESET_LABELS[key]);
+}
+
+function setRevPcts(p1, p2, enableCustom) {
+  const i1 = document.getElementById('rev-pct1');
+  const i2 = document.getElementById('rev-pct2');
+  i1.value = p1;
+  i2.value = p2;
+  // Enable manual edit only for custom
+  i1.disabled = !enableCustom;
+  const stepBtns = ['rev-minus1','rev-plus1','rev-minus2','rev-plus2'];
+  stepBtns.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = false; // steppers always work
+  });
+  i2.disabled = true; // pct2 always auto-computed
+}
+
+// ── Stepper controls ───────────────────────────────────
+function adjustRev(tech, delta) {
+  const p1El = document.getElementById('rev-pct1');
+  const p2El = document.getElementById('rev-pct2');
+  if (tech === 1) {
+    let v = Math.min(100, Math.max(0, parseInt(p1El.value||0) + delta));
+    p1El.value = v;
+    p2El.value = 100 - v;
+  } else {
+    let v = Math.min(100, Math.max(0, parseInt(p2El.value||0) + delta));
+    p2El.value = v;
+    p1El.value = 100 - v;
+  }
+  markCustom();
+  updateDisplay();
+}
+
+function onRevInput() {
+  const p1 = parseInt(document.getElementById('rev-pct1').value)||0;
+  document.getElementById('rev-pct2').value = Math.max(0, 100 - p1);
+  markCustom();
+  updateDisplay();
+}
+
+function onCommInput() {
+  // legacy stub — comm inputs now managed by Figma comm card
+  updateDisplay();
+}
+
+function markCustom() {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('chip-custom').classList.add('active');
+  const defaultPcts = PRESET_VALUES[orgDefault] || PRESET_VALUES['equal'];
+  const p1 = parseInt(document.getElementById('rev-pct1').value)||0;
+  setOverrideState(p1 !== defaultPcts[0], 'Custom');
+}
+
+// ── Display update ─────────────────────────────────────
+function updateDisplay() {
+  const revP1 = parseInt(document.getElementById('rev-pct1').value)||0;
+  const revP2 = parseInt(document.getElementById('rev-pct2').value)||0;
+  const revTotal = revP1 + revP2;
+  const r1 = Math.round(TOTAL_REV * revP1 / 100);
+  const r2 = TOTAL_REV - r1;
+
+  document.getElementById('rev-amt1').textContent = '$' + r1.toLocaleString();
+  document.getElementById('rev-amt2').textContent = '$' + r2.toLocaleString();
+  document.getElementById('rev-bar1').style.width = revP1 + '%';
+  document.getElementById('rev-bar2').style.width = revP2 + '%';
+  document.getElementById('rev-bar-label1').textContent = 'Marcus ' + revP1 + '%';
+  document.getElementById('rev-bar-label2').textContent = 'Jamie ' + revP2 + '%';
+
+  const totalStatus = document.getElementById('rev-total-status');
+  const saveBtn = document.getElementById('save-btn');
+  const errNote = document.getElementById('error-note');
+  if (revTotal === 100) {
+    totalStatus.className = 'total-valid';
+    totalStatus.textContent = '✓ 100%';
+    saveBtn.disabled = false;
+    errNote.style.display = 'none';
+  } else {
+    totalStatus.className = 'total-invalid';
+    totalStatus.textContent = '⚠ ' + revTotal + '%';
+    saveBtn.disabled = true;
+    errNote.style.display = 'block';
+  }
+
+  // Sync commission if using job splits
+  if (typeof commMatchToggle !== 'undefined' && commMatchToggle && commTab !== 'lineitems') {
+    pullRevSplits(); refreshCommCalc();
+  }
+
+}
+
+// ── Override / default state ───────────────────────────
+function setOverrideState(override, methodLabel) {
+  isOverridden = override;
+  document.getElementById('tab-pip').style.display = isSaved ? 'none' : 'block';
+}
+
+function resetToDefault() {
+  applyPreset(orgDefault, null);
+  setOverrideState(false, '');
+  isSaved = false;
+  document.getElementById('saved-badge').classList.remove('show');
+}
+
+// ── Save ───────────────────────────────────────────────
+function saveSplits() {
+  isSaved = true;
+  document.getElementById('tab-pip').style.display = 'none';
+  document.getElementById('saved-badge').classList.add('show');
+  showToast('Splits saved. Leaderboard and commission reports updated.');
+}
+
+function showToast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Figma Commissions card ──────────────────────────────
+let commBasis = 'revenue';
+let commTab = 'manual';
+let commMatchToggle = true;
+let commCardOpen = true;
+
+function toggleCommCard() {
+  commCardOpen = !commCardOpen;
+  document.getElementById('figma-comm-body').style.display = commCardOpen ? '' : 'none';
+  document.getElementById('comm-chev').innerHTML = commCardOpen ? '&#9650;' : '&#9660;';
+}
+
+function setCommBasis(basis) {
+  commBasis = basis;
+  document.getElementById('basis-rev').classList.toggle('active', basis === 'revenue');
+  document.getElementById('basis-gp').classList.toggle('active', basis === 'gross_profit');
+  document.getElementById('gp-metrics').style.display = basis === 'gross_profit' ? 'block' : 'none';
+  document.getElementById('comm-subtabs').style.display = basis === 'revenue' ? 'flex' : 'none';
+  if (basis === 'gross_profit') {
+    document.getElementById('comm-match-row').style.display = 'flex';
+    document.getElementById('comm-lineitems-content').style.display = 'none';
+    showCommContent(true);
+    document.getElementById('c-pool').value = 189;
+    setSplitValues(50, 50);
+    applyMatchToggleState();
+  } else {
+    commTab = 'manual';
+    document.getElementById('stab-lineitems').classList.remove('active');
+    document.getElementById('stab-manual').classList.add('active');
+    document.getElementById('comm-match-row').style.display = 'flex';
+    document.getElementById('comm-lineitems-content').style.display = 'none';
+    showCommContent(true);
+    document.getElementById('c-pool').value = 420;
+    applyMatchToggleState();
+  }
+  refreshCommCalc();
+}
+
+function setCommTab(tab) {
+  commTab = tab;
+  document.getElementById('stab-lineitems').classList.toggle('active', tab === 'lineitems');
+  document.getElementById('stab-manual').classList.toggle('active', tab === 'manual');
+  const isLineitems = (tab === 'lineitems');
+  document.getElementById('comm-match-row').style.display = isLineitems ? 'none' : 'flex';
+  document.getElementById('comm-lineitems-content').style.display = isLineitems ? 'block' : 'none';
+  showCommContent(!isLineitems);
+  if (!isLineitems) { applyMatchToggleState(); refreshCommCalc(); }
+}
+
+function onCommMatchToggle() {
+  commMatchToggle = document.getElementById('comm-match-toggle').checked;
+  applyMatchToggleState();
+  if (commMatchToggle) pullRevSplits();
+  refreshCommCalc();
+}
+
+function applyMatchToggleState() {
+  document.getElementById('c-split1').style.display = commMatchToggle ? 'inline' : 'none';
+  document.getElementById('c-split2').style.display = commMatchToggle ? 'inline' : 'none';
+  document.getElementById('c-stepper1').style.display = commMatchToggle ? 'none' : 'flex';
+  document.getElementById('c-stepper2').style.display = commMatchToggle ? 'none' : 'flex';
+  if (commMatchToggle) pullRevSplits();
+}
+
+function showCommContent(show) {
+  ['comm-pool-row','comm-work-table','comm-subtotal-row','comm-payout-row'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+}
+
+function showCommSteppers(show) {
+  document.getElementById('c-split1').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-split2').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-stepper1').style.display = show ? 'flex' : 'none';
+  document.getElementById('c-stepper2').style.display = show ? 'flex' : 'none';
+}
+
+function pullRevSplits() {
+  const el1 = document.getElementById('rev-pct1');
+  const p1 = el1 ? (parseInt(el1.value) || 50) : 50;
+  setSplitValues(p1, 100 - p1);
+}
+
+function setSplitValues(p1, p2) {
+  document.getElementById('c-split1').textContent = p1 + '%';
+  document.getElementById('c-split2').textContent = p2 + '%';
+  document.getElementById('c-split1-in').value = p1;
+  document.getElementById('c-split2-in').value = p2;
+}
+
+function adjustCommSplit(tech, delta) {
+  const inId = 'c-split' + tech + '-in';
+  const otherInId = 'c-split' + (tech === 1 ? 2 : 1) + '-in';
+  let v = (parseInt(document.getElementById(inId).value) || 0) + delta;
+  v = Math.max(0, Math.min(100, v));
+  document.getElementById(inId).value = v;
+  document.getElementById(otherInId).value = 100 - v;
+  setSplitValues(
+    parseInt(document.getElementById('c-split1-in').value) || 0,
+    parseInt(document.getElementById('c-split2-in').value) || 0
+  );
+  refreshCommCalc();
+}
+
+function onCommSplitInput(tech) {
+  const v = Math.max(0, Math.min(100, parseInt(document.getElementById('c-split' + tech + '-in').value) || 0));
+  document.getElementById('c-split' + (tech === 1 ? 2 : 1) + '-in').value = 100 - v;
+  setSplitValues(
+    parseInt(document.getElementById('c-split1-in').value) || 0,
+    parseInt(document.getElementById('c-split2-in').value) || 0
+  );
+  refreshCommCalc();
+}
+
+function onCommPool() { refreshCommCalc(); }
+
+function refreshCommCalc() {
+  const pool = parseFloat(document.getElementById('c-pool').value) || 0;
+  const useSpan = commMatchToggle;
+  const p1 = useSpan
+    ? (parseInt(document.getElementById('c-split1').textContent) || 0)
+    : (parseInt(document.getElementById('c-split1-in').value) || 0);
+  const p2 = 100 - p1;
+  const a1 = pool * p1 / 100;
+  const a2 = pool * p2 / 100;
+  document.getElementById('c-amount1').textContent = '$' + a1.toFixed(2);
+  document.getElementById('c-amount2').textContent = '$' + a2.toFixed(2);
+  document.getElementById('c-total1').textContent = '$' + a1.toFixed(2);
+  document.getElementById('c-total2').textContent = '$' + a2.toFixed(2);
+  const sub = a1 + a2;
+  document.getElementById('c-subtotal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('c-payout').textContent = '$' + sub.toFixed(2);
+}
+
+// ── Init ───────────────────────────────────────────────
+updateDisplay();
+pullRevSplits();
+applyMatchToggleState();
+refreshCommCalc();
+</script>
+
+</body>
+</html>

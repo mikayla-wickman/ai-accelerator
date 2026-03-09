@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype 1 — Split at Close | Job Splits</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #0057ff;
+  --primary-dark: #0046cc;
+  --primary-light: #e8f0ff;
+  --bg-page: #fafafa;
+  --surface: #ffffff;
+  --text-primary: #15181d;
+  --text-muted: #6b7487;
+  --border: #e1e6f2;
+  --success: #00a344;
+  --success-bg: #e6f7ee;
+  --warning: #bf8600;
+  --warning-bg: #fff8e1;
+  --error: #d81860;
+  --error-bg: #fdeef4;
+  --ai: #623cc9;
+  --ai-bg: #f0ebfc;
+  --radius: 8px;
+  --font: 'Open Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg-page); color: var(--text-primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 14px; }
+
+/* Proto banner */
+.proto-banner {
+  background: var(--primary);
+  color: white;
+  padding: 7px 24px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  letter-spacing: 0.2px;
+}
+.proto-banner a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 400; }
+.proto-banner a:hover { color: white; text-decoration: underline; }
+.proto-tag { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 10px; }
+
+/* App shell */
+.app-shell { display: flex; flex: 1; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 216px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.logo-mark { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; }
+.logo-text { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.sidebar-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+.nav-section { padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 20px; font-size: 13px; font-weight: 400; color: var(--text-muted); cursor: pointer; text-decoration: none; border-left: 2px solid transparent; }
+.nav-item:hover { background: #f5f7ff; color: var(--text-primary); }
+.nav-item.active { color: var(--primary); font-weight: 600; background: var(--primary-light); border-left-color: var(--primary); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+/* Main */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.breadcrumb a { color: var(--primary); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--border); }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-icon { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; color: var(--text-muted); }
+.topbar-icon:hover { background: var(--bg-page); }
+.avatar-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.avatar-sm { width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+/* Content */
+.content { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+/* Job header */
+.job-header { margin-bottom: 20px; }
+.job-header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.job-number { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.job-title { font-size: 22px; font-weight: 400; color: var(--text-primary); }
+.job-meta-row { display: flex; align-items: center; gap: 16px; margin-top: 6px; }
+.job-meta-item { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.header-actions { display: flex; gap: 8px; }
+
+/* Tabs */
+.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab:hover { color: var(--text-primary); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* Layout */
+.grid-cols { display: grid; gap: 20px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 2fr 1fr; }
+.col-span-2 { grid-column: span 2; }
+
+/* Card */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+.card-title-muted { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+
+/* NEW FEATURE highlight */
+.card-new { border: 2px solid var(--primary); position: relative; }
+.card-new-label { position: absolute; top: -10px; left: 16px; background: var(--primary); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* Info banner */
+.info-banner { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; background: var(--primary-light); border-radius: 6px; font-size: 13px; color: var(--text-primary); margin-bottom: 16px; line-height: 1.5; }
+.info-banner-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* Split presets */
+.presets-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.preset-chips { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+.chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+/* Split table */
+.split-table { width: 100%; border-collapse: collapse; }
+.split-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 0 10px; border-bottom: 1px solid var(--border); }
+.split-table td { padding: 14px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.split-table tr:last-child td { border-bottom: none; }
+.split-table .col-right { text-align: right; }
+
+.tech-cell { display: flex; align-items: center; gap: 10px; }
+.tech-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.tech-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.tech-role { font-size: 12px; color: var(--text-muted); }
+
+.percent-input { width: 72px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: var(--font); color: var(--text-primary); text-align: right; background: white; }
+.percent-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,87,255,0.1); }
+.percent-input:disabled { background: var(--bg-page); color: var(--text-muted); border-color: transparent; font-weight: 600; }
+.revenue-cell { font-size: 14px; font-weight: 600; color: var(--text-primary); text-align: right; }
+
+/* Split bar */
+.split-bar-wrap { margin: 14px 0 8px; }
+.split-bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; display: flex; }
+.split-seg { height: 100%; transition: width 0.3s ease; }
+.split-bar-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-muted); }
+
+/* Total validation */
+.total-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 0; border-top: 1px solid var(--border); margin-top: 2px; }
+.total-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.total-valid { color: var(--success); font-size: 13px; font-weight: 700; }
+.total-invalid { color: var(--error); font-size: 13px; font-weight: 700; }
+.total-revenue { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+/* Buttons */
+.btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { background: #b3c8ff; cursor: not-allowed; }
+.btn-outlined { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outlined:hover { background: var(--primary-light); }
+.btn-text { background: transparent; color: var(--primary); padding: 6px 10px; }
+.btn-text:hover { background: var(--primary-light); }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.btn-actions { display: flex; gap: 8px; margin-top: 20px; align-items: center; }
+
+/* Report preview card */
+.report-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.report-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.report-table { width: 100%; border-collapse: collapse; }
+.report-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 20px; background: var(--bg-page); border-bottom: 1px solid var(--border); }
+.report-table td { padding: 12px 20px; font-size: 13px; border-bottom: 1px solid var(--border); }
+.report-table tr:last-child td { border-bottom: none; }
+.report-table .num { text-align: right; font-weight: 600; }
+.change-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600; }
+.change-down { background: var(--error-bg); color: var(--error); }
+.change-up { background: var(--success-bg); color: var(--success); }
+
+.pending-note { font-size: 12px; color: var(--text-muted); font-style: italic; display: flex; align-items: center; gap: 5px; }
+
+/* Info dl */
+.info-dl { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.info-item {}
+.info-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.info-value { font-size: 14px; color: var(--text-primary); font-weight: 400; }
+.info-value-lg { font-size: 20px; font-weight: 400; }
+
+/* Toast */
+.toast { position: fixed; bottom: 28px; right: 28px; background: var(--text-primary); color: white; padding: 12px 20px; border-radius: var(--radius); font-size: 13px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all 0.25s; z-index: 1000; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { color: var(--success); font-size: 16px; }
+
+/* Journey steps */
+.journey { display: flex; align-items: center; padding: 14px 0; margin-bottom: 20px; }
+.j-step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.j-step:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: calc(50% + 14px); right: calc(-50% + 14px); height: 2px; background: var(--success); }
+.j-step:nth-child(n+4)::after { background: var(--border); }
+.j-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; z-index: 1; }
+.j-dot-done { background: var(--success); color: white; }
+.j-dot-active { background: var(--primary); color: white; box-shadow: 0 0 0 4px var(--primary-light); }
+.j-dot-future { background: var(--border); color: var(--text-muted); }
+.j-label { font-size: 11px; color: var(--text-muted); margin-top: 5px; text-align: center; font-weight: 600; }
+.j-label-active { color: var(--primary); }
+
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* Figma-style Commissions card */
+.figma-comm-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-top:24px; margin-bottom:20px; }
+.figma-comm-header { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; cursor:pointer; background:var(--bg-page); border-bottom:1px solid var(--border); }
+.figma-comm-header:hover { background:#f0ebfc; }
+.figma-comm-basis { display:flex; align-items:center; gap:8px; padding:10px 18px; border-bottom:1px solid var(--border); background:#fafcff; flex-wrap:wrap; }
+.basis-btn { background:transparent; border:1px solid var(--border); border-radius:4px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); color:var(--text-muted); transition:all 0.15s; }
+.basis-btn.active { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
+.basis-btn:hover:not(.active) { background:var(--bg-page); }
+.figma-stab { background:transparent; border:none; border-bottom:2px solid transparent; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); color:var(--text-muted); margin-bottom:-2px; }
+.figma-stab.active { color:var(--primary); border-bottom-color:var(--primary); }
+.figma-stab:hover:not(.active) { color:var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div class="proto-banner">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="proto-tag">PROTOTYPE 1 OF 3</span>
+    <strong>Split at Close</strong>
+    <span style="font-weight:400;color:rgba(255,255,255,0.7)">— Contextual inline split editing on Job Details</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="index.html">&#8592; Back to comparison</a>
+    <a href="prototype-2.html">Next prototype &#8594;</a>
+  </div>
+</div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">H</div>
+      <span class="logo-text">Housecall Pro</span>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9783;</span> Dashboard</div>
+      <div class="nav-item active"><span class="nav-icon">&#128198;</span> Jobs</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Customers</div>
+      <div class="nav-item"><span class="nav-icon">&#128196;</span> Estimates</div>
+      <div class="nav-item"><span class="nav-icon">&#128176;</span> Invoices</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Schedule</div>
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item"><span class="nav-icon">&#128202;</span> Reports</div>
+      <div class="nav-section">Company</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="#">Jobs</a>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <span>Job #1847</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-icon">&#128276;</div>
+        <div class="topbar-icon">&#10067;</div>
+        <div class="avatar-chip">
+          <div class="avatar-sm">AK</div>
+          Alpine HVAC
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+
+      <!-- Job header -->
+      <div class="job-header">
+        <div class="job-header-row">
+          <div>
+            <div class="job-number">Job #1847</div>
+            <div class="job-title">HVAC Replacement &amp; Duct Sealing</div>
+            <div class="job-meta-row">
+              <span class="badge badge-success">Completed</span>
+              <span class="job-meta-item">&#128197; Mar 5, 2026</span>
+              <span class="job-meta-item">&#128101; Rodriguez Residence</span>
+              <span class="job-meta-item">&#128176; $4,200.00 invoice</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost">Print Invoice</button>
+            <button class="btn btn-outlined">Edit Job</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active">Overview</div>
+        <div class="tab">Schedule</div>
+        <div class="tab">Invoice</div>
+        <div class="tab">Photos</div>
+        <div class="tab">Notes</div>
+        <div class="tab">Activity</div>
+      </div>
+
+      <!-- Top row: Job info + Customer -->
+      <div class="grid-cols grid-3" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Job Details</div>
+          </div>
+          <div class="info-dl">
+            <div class="info-item">
+              <div class="info-label">Job Type</div>
+              <div class="info-value">HVAC Installation</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Completed</div>
+              <div class="info-value">Mar 5, 2026 3:47 PM</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Invoice Total</div>
+              <div class="info-value info-value-lg">$4,200.00</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Time on Job</div>
+              <div class="info-value">8h 0m total</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Tags</div>
+              <div class="info-value"><span class="badge badge-primary">HVAC</span> <span class="badge badge-primary">Replacement</span></div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Business Unit</div>
+              <div class="info-value">Mechanical</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Customer</div>
+            <button class="btn btn-text" style="font-size:12px">View profile</button>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:2px">Maria Rodriguez</div>
+            <div style="font-size:13px;color:var(--text-muted)">rodriguez.residence@email.com</div>
+            <div style="font-size:13px;color:var(--text-muted)">(555) 412-8830</div>
+          </div>
+          <div class="divider"></div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:2px">Service Address</div>
+          <div style="font-size:13px;color:var(--text-primary)">742 Evergreen Terrace<br>Springfield, CO 80907</div>
+        </div>
+      </div>
+
+      <!-- JOB SPLITS CARD — NEW FEATURE -->
+      <div class="card card-new" style="margin-bottom:20px">
+        <div class="card-new-label">New</div>
+        <div class="card-header">
+          <div class="card-title">
+            &#127828; Team &amp; Job Splits
+            <span style="font-size:12px;font-weight:400;color:var(--text-muted);background:var(--warning-bg);color:var(--warning);padding:2px 8px;border-radius:4px;font-weight:600">Unsaved</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:5px">
+            <span>&#128202;</span> Affects technician reports
+          </div>
+        </div>
+
+        <div class="info-banner">
+          <span class="info-banner-icon">&#8505;</span>
+          <span>Job splits determine how this job's revenue (<strong>$4,200.00</strong>) is attributed to each technician in the Tech Leaderboard and performance reports. Only admins can view or edit these splits.</span>
+        </div>
+
+        <div class="presets-label">Split method</div>
+        <div class="preset-chips">
+          <div class="chip" onclick="setPreset('first')" id="chip-first">All to First Assigned</div>
+          <div class="chip" onclick="setPreset('equal')" id="chip-equal">Equal Split</div>
+          <div class="chip active" onclick="setPreset('time')" id="chip-time">Proportional to Time</div>
+          <div class="chip" onclick="setPreset('custom')" id="chip-custom">Custom</div>
+        </div>
+
+        <table class="split-table">
+          <thead>
+            <tr>
+              <th style="width:38%">Technician</th>
+              <th>Time Logged</th>
+              <th>Split %</th>
+              <th style="text-align:right">Attributed Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="tech-cell">
+                  <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
+                  <div>
+                    <div class="tech-name">Marcus Webb</div>
+                    <div class="tech-role">Lead Technician</div>
+                  </div>
+                </div>
+              </td>
+              <td style="color:var(--text-muted);font-size:13px">5h 30m</td>
+              <td><input class="percent-input" id="pct1" type="number" min="0" max="100" value="69" oninput="onCustomInput()"></td>
+              <td class="revenue-cell" id="rev1">$2,898.00</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="tech-cell">
+                  <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
+                  <div>
+                    <div class="tech-name">Jamie Torres</div>
+                    <div class="tech-role">Technician</div>
+                  </div>
+                </div>
+              </td>
+              <td style="color:var(--text-muted);font-size:13px">2h 30m</td>
+              <td><input class="percent-input" id="pct2" type="number" min="0" max="100" value="31" oninput="onCustomInput()"></td>
+              <td class="revenue-cell" id="rev2">$1,302.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Visual bar -->
+        <div class="split-bar-wrap">
+          <div class="split-bar">
+            <div class="split-seg" id="bar1" style="width:69%;background:var(--primary)"></div>
+            <div class="split-seg" id="bar2" style="width:31%;background:var(--success)"></div>
+          </div>
+          <div class="split-bar-labels">
+            <span id="bar-label1" style="color:var(--primary);font-weight:600">Marcus Webb 69%</span>
+            <span id="bar-label2" style="color:var(--success);font-weight:600">Jamie Torres 31%</span>
+          </div>
+        </div>
+
+        <div class="total-row">
+          <div>
+            <span class="total-label">Total</span>
+            <span id="total-status" class="total-valid" style="margin-left:10px">&#10003; 100%</span>
+          </div>
+          <div class="total-revenue">$4,200.00</div>
+        </div>
+
+        <div class="btn-actions">
+          <button class="btn btn-primary" id="save-btn" onclick="saveSplits()">Save Splits</button>
+          <button class="btn btn-ghost" onclick="setPreset('time')">Reset to Default</button>
+          <span id="save-note" class="pending-note" style="display:none">&#9888; Total must equal 100% to save</span>
+        </div>
+      </div>
+
+      <!-- Commissions card -->
+      <div class="figma-comm-card">
+        <div class="figma-comm-header" onclick="toggleCommCard()">
+          <span style="font-weight:700;font-size:14px;color:var(--ai)">Commissions</span>
+          <span id="comm-chev" style="font-size:11px;color:var(--text-muted)">&#9650;</span>
+        </div>
+        <div id="figma-comm-body">
+          <div class="figma-comm-basis">
+            <span style="font-size:13px;color:var(--text-muted)">Commission basis:</span>
+            <div style="display:flex;gap:4px">
+              <button id="basis-rev" class="basis-btn active" onclick="setCommBasis('revenue')">Revenue</button>
+              <button id="basis-gp" class="basis-btn" onclick="setCommBasis('gross_profit')">Gross profit</button>
+            </div>
+            <a href="#" style="margin-left:auto;font-size:12px;color:var(--primary);text-decoration:none">Manage pay ↗</a>
+          </div>
+          <div id="gp-metrics" style="display:none;padding:12px 18px;background:#f5f8ff;border-bottom:1px solid var(--border)">
+            <div style="display:flex;gap:28px">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Adjusted gross profit</div>
+                <div style="font-size:17px;font-weight:700">$1,890.00</div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Gross profit total</div>
+                <div style="font-size:17px;font-weight:700">$2,100.00</div>
+              </div>
+            </div>
+          </div>
+          <div id="comm-subtabs" style="display:flex;border-bottom:2px solid var(--border);padding:0 18px;gap:4px">
+            <button id="stab-lineitems" class="figma-stab" onclick="setCommTab('lineitems')">Line items</button>
+            <button id="stab-manual" class="figma-stab active" onclick="setCommTab('manual')">Manual splits</button>
+          </div>
+          <div id="comm-match-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);background:#fafcff">
+            <div>
+              <div style="font-size:13px;font-weight:600">Match job splits</div>
+              <div style="font-size:12px;color:var(--text-muted)">Mirror the revenue attribution percentages above</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="comm-match-toggle" checked onchange="onCommMatchToggle()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="comm-lineitems-content" style="display:none;padding:28px 18px;text-align:center;color:var(--text-muted);font-size:13px">
+            Line item commission breakdown coming soon
+          </div>
+          <div id="comm-pool-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;font-weight:600;color:var(--text-muted)">Commission pool</span>
+            <div style="display:flex;align-items:center;gap:4px">
+              <span style="font-size:13px;color:var(--text-muted)">$</span>
+              <input id="c-pool" type="number" value="420" style="width:74px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:13px;text-align:right" oninput="onCommPool()">
+            </div>
+          </div>
+          <table id="comm-work-table" style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:var(--bg-page)">
+                <th style="text-align:left;padding:8px 18px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Work by</th>
+                <th style="text-align:center;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Split</th>
+                <th style="text-align:right;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Amount</th>
+                <th style="text-align:center;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Rate</th>
+                <th style="text-align:right;padding:8px 18px 8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px 18px;border-bottom:1px solid var(--border)">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:26px;height:26px;border-radius:50%;background:#e8f0ff;color:#0057ff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">MW</div>
+                    <span style="font-weight:600">Marcus Webb</span>
+                  </div>
+                </td>
+                <td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)">
+                  <span id="c-split1" style="font-weight:700;color:var(--ai);font-size:14px">69%</span>
+                  <div id="c-stepper1" style="display:none;align-items:center;gap:2px;justify-content:center">
+                    <button onclick="adjustCommSplit(1,-5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
+                    <input id="c-split1-in" type="number" min="0" max="100" value="69" style="width:38px;padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font);text-align:center;color:var(--ai);font-weight:700" oninput="onCommSplitInput(1)">
+                    <button onclick="adjustCommSplit(1,5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
+                  </div>
+                </td>
+                <td style="padding:10px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-amount1">$289.80</span></td>
+                <td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
+                <td style="padding:10px 18px 10px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-total1" style="font-weight:600">$289.80</span></td>
+              </tr>
+              <tr>
+                <td style="padding:10px 18px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:26px;height:26px;border-radius:50%;background:#e6f7ee;color:#00a344;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">JT</div>
+                    <span style="font-weight:600">Jamie Torres</span>
+                  </div>
+                </td>
+                <td style="padding:10px 8px;text-align:center">
+                  <span id="c-split2" style="font-weight:700;color:var(--ai);font-size:14px">31%</span>
+                  <div id="c-stepper2" style="display:none;align-items:center;gap:2px;justify-content:center">
+                    <button onclick="adjustCommSplit(2,-5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
+                    <input id="c-split2-in" type="number" min="0" max="100" value="31" style="width:38px;padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font);text-align:center;color:var(--ai);font-weight:700" oninput="onCommSplitInput(2)">
+                    <button onclick="adjustCommSplit(2,5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
+                  </div>
+                </td>
+                <td style="padding:10px 8px;text-align:right"><span id="c-amount2">$130.20</span></td>
+                <td style="padding:10px 8px;text-align:center"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
+                <td style="padding:10px 18px 10px 8px;text-align:right"><span id="c-total2" style="font-weight:600">$130.20</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div id="comm-subtotal-row" style="padding:10px 18px 6px;display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);margin-top:4px">
+            <span>Work commission subtotal</span>
+            <span id="c-subtotal">$420.00</span>
+          </div>
+          <div id="comm-payout-row" style="padding:8px 18px 16px;display:flex;justify-content:space-between;font-size:15px;font-weight:700">
+            <span>Commission payout</span>
+            <span id="c-payout" style="color:var(--ai)">$420.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard impact preview -->
+      <div class="report-card">
+        <div class="report-header">
+          <div class="card-title">
+            &#128202; Technician Leaderboard — Preview Impact
+            <span id="report-status" style="font-size:12px;font-weight:400;color:var(--text-muted)">After saving these splits</span>
+          </div>
+          <button class="btn btn-text">View full report &#8594;</button>
+        </div>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Technician</th>
+              <th class="num">Jobs (MTD)</th>
+              <th class="num">Revenue Attributed</th>
+              <th class="num">Avg Job Size</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="tech-cell" style="gap:8px">
+                  <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff;width:28px;height:28px;font-size:10px">MW</div>
+                  Marcus Webb
+                </div>
+              </td>
+              <td class="num">12</td>
+              <td class="num">
+                <span id="report-rev1">$2,898</span>
+                <span class="change-tag change-down" id="change1">&#9660; was $4,200</span>
+              </td>
+              <td class="num" id="avg1">$2,651</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="tech-cell" style="gap:8px">
+                  <div class="tech-avatar" style="background:#e6f7ee;color:#00a344;width:28px;height:28px;font-size:10px">JT</div>
+                  Jamie Torres
+                </div>
+              </td>
+              <td class="num">12</td>
+              <td class="num">
+                <span id="report-rev2">$1,302</span>
+                <span class="change-tag change-down" id="change2">&#9660; was $4,200</span>
+              </td>
+              <td class="num" id="avg2">$1,051</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:12px 20px;font-size:12px;color:var(--text-muted);background:var(--bg-page);border-top:1px solid var(--border)">
+          &#9432; Revenue totals across all technicians will now reflect accurate attribution. Previously, this $4,200 job was counted twice.
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">&#10003;</span>
+  Job splits saved. Technician reports are now updated.
+</div>
+
+<script>
+const totalRevenue = 4200;
+let currentPreset = 'time';
+
+function setPreset(preset) {
+  currentPreset = preset;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('chip-' + preset).classList.add('active');
+
+  const p1 = document.getElementById('pct1');
+  const p2 = document.getElementById('pct2');
+
+  if (preset === 'first') { p1.value = 100; p2.value = 0; }
+  else if (preset === 'equal') { p1.value = 50; p2.value = 50; }
+  else if (preset === 'time') { p1.value = 69; p2.value = 31; }
+  else if (preset === 'custom') { p1.value = 60; p2.value = 40; }
+
+  p1.disabled = (preset !== 'custom');
+  p2.disabled = (preset !== 'custom');
+
+  updateDisplay();
+}
+
+function onCustomInput() {
+  currentPreset = 'custom';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('chip-custom').classList.add('active');
+  // Auto-balance
+  const p1 = parseInt(document.getElementById('pct1').value) || 0;
+  document.getElementById('pct2').value = Math.max(0, 100 - p1);
+  updateDisplay();
+}
+
+function updateDisplay() {
+  const p1 = parseInt(document.getElementById('pct1').value) || 0;
+  const p2 = parseInt(document.getElementById('pct2').value) || 0;
+  const total = p1 + p2;
+  const r1 = Math.round(totalRevenue * p1 / 100);
+  const r2 = totalRevenue - r1;
+
+  document.getElementById('rev1').textContent = '$' + r1.toLocaleString() + '.00';
+  document.getElementById('rev2').textContent = '$' + r2.toLocaleString() + '.00';
+
+  document.getElementById('bar1').style.width = p1 + '%';
+  document.getElementById('bar2').style.width = p2 + '%';
+  document.getElementById('bar-label1').textContent = 'Marcus Webb ' + p1 + '%';
+  document.getElementById('bar-label2').textContent = 'Jamie Torres ' + p2 + '%';
+
+  const statusEl = document.getElementById('total-status');
+  const saveBtn = document.getElementById('save-btn');
+  const saveNote = document.getElementById('save-note');
+  if (total === 100) {
+    statusEl.className = 'total-valid';
+    statusEl.textContent = '✓ 100%';
+    saveBtn.disabled = false;
+    saveNote.style.display = 'none';
+  } else {
+    statusEl.className = 'total-invalid';
+    statusEl.textContent = '⚠ ' + total + '% (must be 100%)';
+    saveBtn.disabled = true;
+    saveNote.style.display = 'flex';
+  }
+
+  // Update report preview
+  document.getElementById('report-rev1').textContent = '$' + r1.toLocaleString();
+  document.getElementById('report-rev2').textContent = '$' + r2.toLocaleString();
+  document.getElementById('change1').textContent = p1 === 100 ? '' : '↓ was $4,200';
+  document.getElementById('change2').textContent = p2 === 100 ? '' : '↓ was $4,200';
+  // Sync commission if matching job splits
+  if (typeof commMatchToggle !== 'undefined' && commMatchToggle && commTab !== 'lineitems') {
+    pullRevSplits(); refreshCommCalc();
+  }
+}
+
+function saveSplits() {
+  const card = document.querySelector('.card-new');
+  const unsavedBadge = card.querySelector('[style*="warning-bg"]');
+  if (unsavedBadge) {
+    unsavedBadge.textContent = 'Saved';
+    unsavedBadge.style.background = 'var(--success-bg)';
+    unsavedBadge.style.color = 'var(--success)';
+  }
+  document.getElementById('report-status').textContent = '✓ Splits applied';
+  document.getElementById('report-status').style.color = 'var(--success)';
+  showToast();
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Figma Commissions card ──────────────────────────────
+let commBasis = 'revenue';
+let commTab = 'manual';
+let commMatchToggle = true;
+let commCardOpen = true;
+
+function toggleCommCard() {
+  commCardOpen = !commCardOpen;
+  document.getElementById('figma-comm-body').style.display = commCardOpen ? '' : 'none';
+  document.getElementById('comm-chev').innerHTML = commCardOpen ? '&#9650;' : '&#9660;';
+}
+
+function setCommBasis(basis) {
+  commBasis = basis;
+  document.getElementById('basis-rev').classList.toggle('active', basis === 'revenue');
+  document.getElementById('basis-gp').classList.toggle('active', basis === 'gross_profit');
+  document.getElementById('gp-metrics').style.display = basis === 'gross_profit' ? 'block' : 'none';
+  document.getElementById('comm-subtabs').style.display = basis === 'revenue' ? 'flex' : 'none';
+  if (basis === 'gross_profit') {
+    document.getElementById('comm-match-row').style.display = 'flex';
+    document.getElementById('comm-lineitems-content').style.display = 'none';
+    showCommContent(true);
+    document.getElementById('c-pool').value = 189;
+    setSplitValues(50, 50);
+    applyMatchToggleState();
+  } else {
+    commTab = 'manual';
+    document.getElementById('stab-manual').classList.add('active');
+    document.getElementById('stab-lineitems').classList.remove('active');
+    document.getElementById('comm-match-row').style.display = 'flex';
+    document.getElementById('comm-lineitems-content').style.display = 'none';
+    showCommContent(true);
+    document.getElementById('c-pool').value = 420;
+    applyMatchToggleState();
+  }
+  refreshCommCalc();
+}
+
+function setCommTab(tab) {
+  commTab = tab;
+  document.getElementById('stab-lineitems').classList.toggle('active', tab === 'lineitems');
+  document.getElementById('stab-manual').classList.toggle('active', tab === 'manual');
+  const isLineitems = (tab === 'lineitems');
+  document.getElementById('comm-match-row').style.display = isLineitems ? 'none' : 'flex';
+  document.getElementById('comm-lineitems-content').style.display = isLineitems ? 'block' : 'none';
+  showCommContent(!isLineitems);
+  if (!isLineitems) { applyMatchToggleState(); refreshCommCalc(); }
+}
+
+function onCommMatchToggle() {
+  commMatchToggle = document.getElementById('comm-match-toggle').checked;
+  applyMatchToggleState();
+  if (commMatchToggle) pullRevSplits();
+  refreshCommCalc();
+}
+
+function applyMatchToggleState() {
+  document.getElementById('c-split1').style.display = commMatchToggle ? 'inline' : 'none';
+  document.getElementById('c-split2').style.display = commMatchToggle ? 'inline' : 'none';
+  document.getElementById('c-stepper1').style.display = commMatchToggle ? 'none' : 'flex';
+  document.getElementById('c-stepper2').style.display = commMatchToggle ? 'none' : 'flex';
+  if (commMatchToggle) pullRevSplits();
+}
+
+function showCommContent(show) {
+  ['comm-pool-row','comm-work-table','comm-subtotal-row','comm-payout-row'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+}
+
+function showCommSteppers(show) {
+  document.getElementById('c-split1').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-split2').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-stepper1').style.display = show ? 'flex' : 'none';
+  document.getElementById('c-stepper2').style.display = show ? 'flex' : 'none';
+}
+
+function adjustCommSplit(tech, delta) {
+  const v1 = parseInt(document.getElementById('c-split1-in').value) || 0;
+  if (tech === 1) {
+    const nv = Math.min(100, Math.max(0, v1 + delta));
+    document.getElementById('c-split1-in').value = nv;
+    document.getElementById('c-split2-in').value = 100 - nv;
+  } else {
+    const v2 = parseInt(document.getElementById('c-split2-in').value) || 0;
+    const nv = Math.min(100, Math.max(0, v2 + delta));
+    document.getElementById('c-split2-in').value = nv;
+    document.getElementById('c-split1-in').value = 100 - nv;
+  }
+  refreshCommCalc();
+}
+
+function onCommSplitInput(tech) {
+  if (tech === 1) {
+    const v1 = parseInt(document.getElementById('c-split1-in').value) || 0;
+    document.getElementById('c-split2-in').value = Math.max(0, 100 - v1);
+  } else {
+    const v2 = parseInt(document.getElementById('c-split2-in').value) || 0;
+    document.getElementById('c-split1-in').value = Math.max(0, 100 - v2);
+  }
+  refreshCommCalc();
+}
+
+function pullRevSplits() {
+  const el1 = document.getElementById('pct1') || document.getElementById('rev-pct1');
+  const p1 = el1 ? (parseInt(el1.value) || 50) : 50;
+  setSplitValues(p1, 100 - p1);
+}
+
+function setSplitValues(p1, p2) {
+  document.getElementById('c-split1').textContent = p1 + '%';
+  document.getElementById('c-split2').textContent = p2 + '%';
+  document.getElementById('c-split1-in').value = p1;
+  document.getElementById('c-split2-in').value = p2;
+}
+
+function onCommPool() { refreshCommCalc(); }
+
+function refreshCommCalc() {
+  const pool = parseFloat(document.getElementById('c-pool').value) || 0;
+  const useSpan = commMatchToggle;
+  const p1 = useSpan
+    ? (parseInt(document.getElementById('c-split1').textContent) || 0)
+    : (parseInt(document.getElementById('c-split1-in').value) || 0);
+  const p2 = 100 - p1;
+  const a1 = pool * p1 / 100;
+  const a2 = pool * p2 / 100;
+  document.getElementById('c-amount1').textContent = '$' + a1.toFixed(2);
+  document.getElementById('c-amount2').textContent = '$' + a2.toFixed(2);
+  document.getElementById('c-total1').textContent = '$' + a1.toFixed(2);
+  document.getElementById('c-total2').textContent = '$' + a2.toFixed(2);
+  const sub = a1 + a2;
+  document.getElementById('c-subtotal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('c-payout').textContent = '$' + sub.toFixed(2);
+}
+
+// Init
+setPreset('time');
+pullRevSplits();
+applyMatchToggleState();
+refreshCommCalc();
+</script>
+</body>
+</html>

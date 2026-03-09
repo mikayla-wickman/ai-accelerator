@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Splits — Design Concepts | Housecall Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #0057ff;
+  --primary-dark: #0046cc;
+  --primary-light: #e8f0ff;
+  --bg-page: #fafafa;
+  --surface: #ffffff;
+  --text-primary: #15181d;
+  --text-muted: #6b7487;
+  --border: #e1e6f2;
+  --success: #00a344;
+  --success-bg: #e6f7ee;
+  --warning: #bf8600;
+  --warning-bg: #fff8e1;
+  --error: #d81860;
+  --error-bg: #fdeef4;
+  --ai: #623cc9;
+  --ai-bg: #f0ebfc;
+  --radius: 8px;
+  --font: 'Open Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg-page); color: var(--text-primary); min-height: 100vh; }
+
+/* Header */
+.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 10; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo-mark { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; }
+.logo-text { font-size: 15px; font-weight: 700; }
+.header-divider { width: 1px; height: 24px; background: var(--border); }
+.header-project { font-size: 13px; color: var(--text-muted); }
+.header-project strong { color: var(--text-primary); }
+.header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-muted); }
+
+/* Hero */
+.hero { padding: 56px 40px 40px; max-width: 1200px; margin: 0 auto; }
+.hero-eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 12px; }
+.hero-title { font-size: 36px; font-weight: 400; color: var(--text-primary); line-height: 1.2; margin-bottom: 12px; max-width: 640px; }
+.hero-subtitle { font-size: 16px; color: var(--text-muted); line-height: 1.6; max-width: 640px; margin-bottom: 28px; }
+.hero-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+.hero-meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+.hero-meta-icon { font-size: 14px; }
+
+/* Insight banner */
+.insight-strip { background: var(--primary-light); border-top: 1px solid rgba(0,87,255,0.12); border-bottom: 1px solid rgba(0,87,255,0.12); padding: 14px 40px; margin-bottom: 0; }
+.insight-strip-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+.insight-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.4; color: var(--text-primary); }
+.insight-icon { font-size: 16px; flex-shrink: 0; }
+
+/* Spectrum bar */
+.spectrum-section { max-width: 1200px; margin: 40px auto 0; padding: 0 40px; }
+.spectrum-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 10px; }
+.spectrum-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--primary) 0%, var(--ai) 50%, var(--success) 100%); margin-bottom: 6px; }
+.spectrum-ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
+
+/* Prototype cards */
+.cards-section { max-width: 1200px; margin: 28px auto 0; padding: 0 40px 60px; }
+.cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+.proto-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: all 0.2s; display: flex; flex-direction: column; }
+.proto-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08); transform: translateY(-2px); border-color: var(--primary); }
+
+.card-preview { position: relative; height: 200px; overflow: hidden; border-bottom: 1px solid var(--border); }
+.card-preview iframe { width: 100%; height: 600px; transform: scale(0.333); transform-origin: top left; border: none; pointer-events: none; }
+.card-preview-overlay { position: absolute; inset: 0; cursor: pointer; }
+
+/* Simulated preview thumbnails */
+.preview-thumb { height: 200px; background: var(--bg-page); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.preview-ui { width: 90%; max-width: 320px; }
+.preview-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 8px; }
+.preview-title { font-size: 11px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.preview-chips { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+.preview-chip { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; border: 1px solid var(--border); color: var(--text-muted); }
+.preview-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+.preview-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 10px; }
+.preview-row:last-child { border-bottom: none; }
+.preview-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 700; flex-shrink: 0; }
+.preview-name { flex: 1; font-size: 10px; font-weight: 600; }
+.preview-pct { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; }
+.preview-bar { height: 5px; border-radius: 3px; display: flex; overflow: hidden; margin-top: 6px; }
+.preview-seg { height: 100%; }
+.preview-settings { }
+.preview-option { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-size: 10px; }
+.preview-option.selected { border-color: var(--primary); background: var(--primary-light); }
+.preview-radio { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; }
+.preview-option.selected .preview-radio { border-color: var(--primary); background: var(--primary); }
+.preview-panel-rows { }
+.preview-panel-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 10px; }
+.preview-panel-row:last-child { border-bottom: none; }
+.preview-stepper { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.preview-step-btn { width: 16px; height: 18px; background: var(--bg-page); display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--text-muted); }
+.preview-step-val { width: 26px; height: 18px; background: white; border-left: 1px solid var(--border); border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+.card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.card-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
+.card-headline { font-size: 17px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.card-rationale { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.card-tone { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.tone-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; color: white; }
+
+.journey-path { }
+.journey-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+.journey-steps { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.j-step-mini { font-size: 11px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.j-arrow { font-size: 10px; color: var(--border); }
+.j-step-mini.highlight { color: var(--primary); }
+
+.pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pros-cons-col {}
+.pc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.pc-label-pro { color: var(--success); }
+.pc-label-con { color: var(--error); }
+.pc-list { display: flex; flex-direction: column; gap: 4px; }
+.pc-item { display: flex; align-items: flex-start; gap: 5px; font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+.pc-bullet { flex-shrink: 0; margin-top: 1px; }
+
+.card-cta { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+.btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-outlined { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outlined:hover { background: var(--primary-light); }
+
+/* Spectrum position dots */
+.spectrum-markers { display: flex; position: relative; margin-bottom: 20px; }
+.spectrum-dot { position: absolute; top: -14px; font-size: 10px; font-weight: 700; color: white; background: var(--primary); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: translateX(-50%); border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+
+/* Comparison table */
+.comparison-section { max-width: 1200px; margin: 0 auto; padding: 0 40px 60px; }
+.section-title-lg { font-size: 22px; font-weight: 400; margin-bottom: 6px; }
+.section-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+.comp-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.comp-table th { padding: 14px 20px; text-align: left; background: var(--bg-page); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.comp-table td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+.comp-table tr:last-child td { border-bottom: none; }
+.comp-table .row-label { font-weight: 700; color: var(--text-primary); font-size: 13px; white-space: nowrap; }
+.check { color: var(--success); font-size: 14px; }
+.x-mark { color: var(--error); font-size: 14px; }
+.partial { color: var(--warning); font-size: 14px; }
+
+/* Footer */
+.footer { background: var(--surface); border-top: 1px solid var(--border); padding: 24px 40px; text-align: center; font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">H</div>
+    <span class="logo-text">Housecall Pro</span>
+    <div class="header-divider"></div>
+    <div class="header-project">Design Explorations &middot; <strong>Job Splits</strong></div>
+  </div>
+  <div class="header-right">
+    <span>DES-5890</span>
+    <span>&middot;</span>
+    <span>March 2026</span>
+    <span>&middot;</span>
+    <span>4 prototypes</span>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Job Splits — UX Explorations</div>
+  <div class="hero-title">Accurate revenue attribution for every multi-tech job</div>
+  <div class="hero-subtitle">Three design approaches to solving the job splits problem for home service Pros — from frictionless per-job editing to org-wide defaults to fully unified revenue and commission control.</div>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="hero-meta-icon">&#128100;</span> Owners &amp; Admins (web only)</div>
+    <div class="hero-meta-item"><span class="hero-meta-icon">&#128198;</span> Multi-tech job scenarios</div>
+    <div class="hero-meta-item"><span class="hero-meta-icon">&#128202;</span> Tech Leaderboard &amp; commission reports</div>
+    <div class="hero-meta-item"><span class="hero-meta-icon">&#128196;</span> Based on 8 Pro interviews + Reforge insights</div>
+  </div>
+</div>
+
+<!-- Insight strip -->
+<div class="insight-strip">
+  <div class="insight-strip-inner">
+    <div class="insight-item"><span class="insight-icon">&#128172;</span><span><strong>Top request from research:</strong> Proportional-to-time split as the smart default, with ability to manually override per job.</span></div>
+    <div class="insight-item"><span class="insight-icon">&#128274;</span><span><strong>Admin-only inputs:</strong> All Pros interviewed want split editing restricted to owners/admins. Field techs should only see outputs (leaderboard).</span></div>
+    <div class="insight-item"><span class="insight-icon">&#128279;</span><span><strong>Commission alignment:</strong> Most Pros want commissions and revenue splits to be consistent — unification reduces double admin work.</span></div>
+  </div>
+</div>
+
+<!-- Spectrum -->
+<div class="spectrum-section">
+  <div class="spectrum-label">Concept spectrum — from contextual &amp; low-friction to systematic &amp; comprehensive</div>
+  <div style="position:relative;padding-bottom:28px">
+    <div class="spectrum-bar" style="margin-bottom:0"></div>
+    <div style="position:relative;height:28px">
+      <div class="spectrum-dot" style="left:12.5%;background:var(--primary)">1</div>
+      <div class="spectrum-dot" style="left:37.5%;background:var(--ai)">2</div>
+      <div class="spectrum-dot" style="left:62.5%;background:var(--success)">3</div>
+      <div class="spectrum-dot" style="left:87.5%;background:#d63384">4</div>
+    </div>
+    <div class="spectrum-ends">
+      <span>Low friction &middot; Per-job</span>
+      <span>Systematic &middot; Org defaults</span>
+      <span>Unified &middot; Comprehensive</span>
+      <span>Best of all three</span>
+    </div>
+  </div>
+</div>
+
+<!-- Cards -->
+<div class="cards-section">
+  <div class="cards-grid">
+
+    <!-- Card 1 -->
+    <div class="proto-card">
+      <div class="preview-thumb" style="border-bottom:1px solid var(--border)">
+        <div class="preview-ui">
+          <div class="preview-card">
+            <div class="preview-title">&#127828; Team &amp; Job Splits</div>
+            <div class="preview-chips">
+              <div class="preview-chip">All to First</div>
+              <div class="preview-chip">Equal</div>
+              <div class="preview-chip active">Prop. to Time</div>
+              <div class="preview-chip">Custom</div>
+            </div>
+            <div class="preview-row">
+              <div class="preview-dot" style="background:#e8f0ff;color:#0057ff">MW</div>
+              <div class="preview-name">Marcus Webb</div>
+              <div class="preview-pct" style="background:#e8f0ff;color:#0057ff">69%</div>
+              <div style="font-size:10px;font-weight:700;color:#15181d;min-width:40px;text-align:right">$2,898</div>
+            </div>
+            <div class="preview-row">
+              <div class="preview-dot" style="background:#e6f7ee;color:#00a344">JT</div>
+              <div class="preview-name">Jamie Torres</div>
+              <div class="preview-pct" style="background:#e6f7ee;color:#00a344">31%</div>
+              <div style="font-size:10px;font-weight:700;color:#15181d;min-width:40px;text-align:right">$1,302</div>
+            </div>
+            <div class="preview-bar" style="margin-top:8px">
+              <div class="preview-seg" style="width:69%;background:#0057ff"></div>
+              <div class="preview-seg" style="width:31%;background:#00a344"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-num">Prototype 1</div>
+        <div class="card-headline">Split credit where credit is due — right on the job.</div>
+        <div class="card-rationale">Meets owners at the exact moment they need to make an attribution decision: when closing out a multi-tech job. No settings required. Just see it, set it, save it.</div>
+
+        <div class="card-tone">
+          <span style="font-size:13px;color:var(--text-muted)">Tone:</span>
+          <span class="tone-tag" style="background:var(--primary)">Efficient</span>
+          <span class="tone-tag" style="background:#2d6bcd">In-control</span>
+          <span class="tone-tag" style="background:#4a7fc1">Frictionless</span>
+        </div>
+
+        <div class="journey-path">
+          <div class="journey-label">Journey</div>
+          <div class="journey-steps">
+            <span class="j-step-mini">Job completed</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini highlight">Split appears inline</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini">Adjust preset</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini highlight">Save</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini">Reports accurate</span>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-pro">Pros</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Zero setup required</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Appears at the right moment</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Live $ preview as you adjust</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Follows commissions pattern</div>
+            </div>
+          </div>
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-con">Cons</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Manual for every job</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Easy to overlook / forget</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Doesn't scale for large teams</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> No commission connection</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-cta">
+          <a href="prototype-1.html" class="btn btn-primary">Open prototype &#8594;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="proto-card">
+      <div class="preview-thumb" style="border-bottom:1px solid var(--border)">
+        <div class="preview-ui">
+          <div class="preview-card" style="padding:10px">
+            <div class="preview-title" style="margin-bottom:8px">Job Split Defaults</div>
+            <div class="preview-option">
+              <div class="preview-radio"></div>
+              <span>All to First Assigned</span>
+            </div>
+            <div class="preview-option selected">
+              <div class="preview-radio"></div>
+              <span style="color:#0057ff;font-weight:700">Equal Split</span>
+            </div>
+            <div class="preview-option">
+              <div class="preview-radio"></div>
+              <span>Proportional to Time</span>
+            </div>
+            <div class="preview-option">
+              <div class="preview-radio"></div>
+              <span>Manual per Job</span>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:4px">
+            <div style="background:#0057ff;color:white;padding:5px 12px;border-radius:6px;font-size:10px;font-weight:700">Save Default</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-num">Prototype 2</div>
+        <div class="card-headline">Set your split rules once. Every job handles itself.</div>
+        <div class="card-rationale">Reduces per-job admin overhead by letting owners define org-level default split rules that auto-apply to all new multi-tech jobs — with per-job override when needed.</div>
+
+        <div class="card-tone">
+          <span style="font-size:13px;color:var(--text-muted)">Tone:</span>
+          <span class="tone-tag" style="background:var(--ai)">Systematic</span>
+          <span class="tone-tag" style="background:#7b4fd6">Confident</span>
+          <span class="tone-tag" style="background:#9568e0">Scalable</span>
+        </div>
+
+        <div class="journey-path">
+          <div class="journey-label">Journey</div>
+          <div class="journey-steps">
+            <span class="j-step-mini highlight">Settings: set default</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini">Job auto-applies</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini highlight">Override if needed</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini">Reports accurate</span>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-pro">Pros</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Scales to large teams</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Nothing to do on each job</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Per-job override available</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Familiar settings pattern</div>
+            </div>
+          </div>
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-con">Cons</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Requires setup before use</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Less visible/discoverable</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> One-size-fits-all default</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Commissions separate</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-cta">
+          <a href="prototype-2.html" class="btn btn-primary">Open prototype &#8594;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="proto-card">
+      <div class="preview-thumb" style="border-bottom:1px solid var(--border)">
+        <div class="preview-ui">
+          <div class="preview-card" style="padding:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="preview-title" style="margin-bottom:0">Revenue &amp; Commission Splits</div>
+            </div>
+            <div style="background:#f0ebfc;border-radius:5px;padding:6px 8px;font-size:9px;color:#623cc9;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:4px">
+              <span>&#128279;</span> Revenue &amp; commissions in sync
+            </div>
+            <div class="preview-panel-rows">
+              <div class="preview-panel-row">
+                <div class="preview-dot" style="background:#e8f0ff;color:#0057ff;width:18px;height:18px;font-size:7px">MW</div>
+                <div style="flex:1;font-size:10px;font-weight:600">Marcus Webb</div>
+                <div class="preview-stepper">
+                  <div class="preview-step-btn">-</div>
+                  <div class="preview-step-val">69%</div>
+                  <div class="preview-step-btn">+</div>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:#0057ff;min-width:36px;text-align:right">$2,898</div>
+              </div>
+              <div class="preview-panel-row">
+                <div class="preview-dot" style="background:#e6f7ee;color:#00a344;width:18px;height:18px;font-size:7px">JT</div>
+                <div style="flex:1;font-size:10px;font-weight:600">Jamie Torres</div>
+                <div class="preview-stepper">
+                  <div class="preview-step-btn">-</div>
+                  <div class="preview-step-val">31%</div>
+                  <div class="preview-step-btn">+</div>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:#0057ff;min-width:36px;text-align:right">$1,302</div>
+              </div>
+            </div>
+            <div style="border-top:1px solid #e1e6f2;margin-top:6px;padding-top:6px;font-size:9px;color:#623cc9;font-weight:700">Commission payouts: $290 / $130</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-num">Prototype 3</div>
+        <div class="card-headline">One split. Revenue and commissions, finally in sync.</div>
+        <div class="card-rationale">Eliminates the confusion of maintaining separate commission splits and job splits by unifying them in a single side panel — with optional decoupling for advanced users.</div>
+
+        <div class="card-tone">
+          <span style="font-size:13px;color:var(--text-muted)">Tone:</span>
+          <span class="tone-tag" style="background:var(--success)">Clarity</span>
+          <span class="tone-tag" style="background:#00825a">Trust</span>
+          <span class="tone-tag" style="background:#006b4a">Cohesion</span>
+        </div>
+
+        <div class="journey-path">
+          <div class="journey-label">Journey</div>
+          <div class="journey-steps">
+            <span class="j-step-mini">Job completed</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini highlight">Open Splits panel</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini">Set once</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini highlight">Both reports update</span>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-pro">Pros</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Revenue + commission unified</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Reduces duplicate admin work</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Advanced users can decouple</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Instant $ feedback both ways</div>
+            </div>
+          </div>
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-con">Cons</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Most complex to build</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Panel adds visual density</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Requires commissions BE</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Overkill for simple orgs</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-cta">
+          <a href="prototype-3.html" class="btn btn-primary">Open prototype &#8594;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="proto-card" style="border-color:#d63384">
+      <div class="preview-thumb" style="border-bottom:1px solid var(--border)">
+        <div class="preview-ui">
+          <!-- Tab bar preview -->
+          <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:8px;gap:0">
+            <div style="padding:5px 10px;font-size:9px;color:var(--text-muted);font-weight:600">Overview</div>
+            <div style="padding:5px 10px;font-size:9px;color:var(--text-muted);font-weight:600">Schedule</div>
+            <div style="padding:5px 10px;font-size:9px;color:#0057ff;font-weight:700;border-bottom:2px solid #0057ff;margin-bottom:-1px;display:flex;align-items:center;gap:3px">
+              Team &amp; Splits
+              <div style="width:5px;height:5px;border-radius:50%;background:var(--warning)"></div>
+            </div>
+            <div style="padding:5px 10px;font-size:9px;color:var(--text-muted);font-weight:600">Invoice</div>
+          </div>
+          <div class="preview-card" style="padding:10px">
+            <div style="background:var(--success-bg);border-radius:5px;padding:5px 8px;font-size:9px;color:var(--success);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:4px">
+              <span>&#9989;</span> Equal Split applied from org default
+            </div>
+            <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">
+              <div style="padding:3px 7px;border-radius:10px;font-size:9px;font-weight:600;border:1px solid var(--border);color:var(--text-muted)">All to First</div>
+              <div style="padding:3px 7px;border-radius:10px;font-size:9px;font-weight:600;background:#0057ff;color:white">Equal</div>
+              <div style="padding:3px 7px;border-radius:10px;font-size:9px;font-weight:600;border:1px solid var(--border);color:var(--text-muted)">Prop. to Time</div>
+            </div>
+            <div class="preview-row">
+              <div class="preview-dot" style="background:#e8f0ff;color:#0057ff">MW</div>
+              <div class="preview-name">Marcus Webb</div>
+              <div style="font-size:9px;font-weight:700;color:#0057ff">50%</div>
+              <div style="font-size:9px;font-weight:700;color:#15181d;min-width:36px;text-align:right">$2,100</div>
+            </div>
+            <div class="preview-row">
+              <div class="preview-dot" style="background:#e6f7ee;color:#00a344">JT</div>
+              <div class="preview-name">Jamie Torres</div>
+              <div style="font-size:9px;font-weight:700;color:#0057ff">50%</div>
+              <div style="font-size:9px;font-weight:700;color:#15181d;min-width:36px;text-align:right">$2,100</div>
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:6px;padding-top:5px;font-size:9px;color:var(--ai);font-weight:600;display:flex;align-items:center;gap:4px">
+              <span>&#128279;</span> Commission linked &middot; $210 / $210
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-num" style="color:#d63384">Prototype 4 &mdash; Synthesis</div>
+        <div class="card-headline">Everything in one tab. Defaults do the work. You stay in control.</div>
+        <div class="card-rationale">Combines org-wide defaults (P2), linked revenue and commission splits (P3), and preset method switching — all surfaced in a dedicated Team tab on the job details page instead of a sidebar or inline section.</div>
+
+        <div class="card-tone">
+          <span style="font-size:13px;color:var(--text-muted)">Tone:</span>
+          <span class="tone-tag" style="background:#d63384">Purposeful</span>
+          <span class="tone-tag" style="background:#b5206e">Trustworthy</span>
+          <span class="tone-tag" style="background:#8f1355">Complete</span>
+        </div>
+
+        <div class="journey-path">
+          <div class="journey-label">Journey</div>
+          <div class="journey-steps">
+            <span class="j-step-mini highlight">Settings: set default</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini">Job auto-applies</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini highlight">Team tab: review &amp; adjust</span>
+            <span class="j-arrow">&#8594;</span>
+            <span class="j-step-mini highlight">Both reports update</span>
+          </div>
+        </div>
+
+        <div style="background:#fff5f9;border:1px solid rgba(214,51,132,0.2);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--text-primary);line-height:1.5;display:flex;gap:8px">
+          <span style="font-size:14px;flex-shrink:0">&#127381;</span>
+          <span><strong>Draws from P2 + P3:</strong> Org defaults (P2) flow into a job automatically. The Team tab (new) hosts preset chips, revenue + commission splits, and the link toggle (P3) — without a persistent sidebar.</span>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-pro">Pros</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Defaults reduce per-job effort</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Revenue + commission unified</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Dedicated tab = findable</div>
+              <div class="pc-item"><span class="pc-bullet check">&#10003;</span> Override stays in context</div>
+            </div>
+          </div>
+          <div class="pros-cons-col">
+            <div class="pc-label pc-label-con">Cons</div>
+            <div class="pc-list">
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Requires Settings setup first</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Most complex to ship</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Tab easy to miss for new users</div>
+              <div class="pc-item"><span class="pc-bullet x-mark">&#215;</span> Requires commissions BE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-cta">
+          <a href="prototype-4.html" class="btn btn-primary" style="background:#d63384">Open prototype &#8594;</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Comparison table -->
+<div class="comparison-section">
+  <div class="section-title-lg">Side-by-side comparison</div>
+  <div class="section-subtitle">How each approach stacks up across key criteria</div>
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Criteria</th>
+        <th style="width:20%">1 — Split at Close</th>
+        <th style="width:20%">2 — Smart Defaults</th>
+        <th style="width:20%">3 — One Truth</th>
+        <th style="width:22%;background:#fff5f9;border-bottom:2px solid #d63384">4 — Team Tab <span style="font-size:10px;font-weight:400;color:#d63384">(synthesis)</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-label">Time to first split</td>
+        <td><span class="check">&#10003;</span> Immediate — works on first job</td>
+        <td><span class="partial">&#9651;</span> Requires 1-2 min Settings setup</td>
+        <td><span class="check">&#10003;</span> Immediate — panel on job</td>
+        <td style="background:#fff5f9"><span class="partial">&#9651;</span> Settings setup once, then automatic</td>
+      </tr>
+      <tr>
+        <td class="row-label">Scales with team size</td>
+        <td><span class="x-mark">&#215;</span> Manual effort per job</td>
+        <td><span class="check">&#10003;</span> Defaults handle every job automatically</td>
+        <td><span class="partial">&#9651;</span> Still per-job, but efficient panel</td>
+        <td style="background:#fff5f9"><span class="check">&#10003;</span> Defaults + per-job override in Team tab</td>
+      </tr>
+      <tr>
+        <td class="row-label">Commission integration</td>
+        <td><span class="x-mark">&#215;</span> Separate (revenue only)</td>
+        <td><span class="x-mark">&#215;</span> Separate (revenue only)</td>
+        <td><span class="check">&#10003;</span> Fully unified with toggle to decouple</td>
+        <td style="background:#fff5f9"><span class="check">&#10003;</span> Unified with link toggle in same tab</td>
+      </tr>
+      <tr>
+        <td class="row-label">Discoverability</td>
+        <td><span class="check">&#10003;</span> Inline on job — hard to miss</td>
+        <td><span class="partial">&#9651;</span> Buried in Settings</td>
+        <td><span class="check">&#10003;</span> Persistent side panel on job</td>
+        <td style="background:#fff5f9"><span class="partial">&#9651;</span> Dedicated tab — findable but not passive</td>
+      </tr>
+      <tr>
+        <td class="row-label">Ease for new users</td>
+        <td><span class="check">&#10003;</span> No learning curve</td>
+        <td><span class="partial">&#9651;</span> Conceptual shift to "defaults"</td>
+        <td><span class="partial">&#9651;</span> More UI complexity</td>
+        <td style="background:#fff5f9"><span class="partial">&#9651;</span> Tab-based; moderate complexity</td>
+      </tr>
+      <tr>
+        <td class="row-label">Matches commissions UX</td>
+        <td><span class="check">&#10003;</span> Same pattern as commissions</td>
+        <td><span class="partial">&#9651;</span> Different model from commissions</td>
+        <td><span class="check">&#10003;</span> Replaces and improves commissions</td>
+        <td style="background:#fff5f9"><span class="check">&#10003;</span> Unifies both in one familiar place</td>
+      </tr>
+      <tr>
+        <td class="row-label">Recommended for</td>
+        <td>MVPs, fast shipping, small-team Pros</td>
+        <td>Ops-oriented owners, 10+ tech teams</td>
+        <td>Pros using commissions + revenue tracking together</td>
+        <td style="background:#fff5f9">Teams that want defaults + full control with commission alignment</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Housecall Pro &middot; Reporting Squad &middot; DES-5890 Tech Efficiency &middot; March 2026 &middot; Admin/Owner web only &middot; Field tech mobile shows outputs only &middot;
+  <a href="prototype-1.html" style="color:var(--primary);text-decoration:none;margin:0 4px">P1</a>
+  <a href="prototype-2.html" style="color:var(--primary);text-decoration:none;margin:0 4px">P2</a>
+  <a href="prototype-3.html" style="color:var(--primary);text-decoration:none;margin:0 4px">P3</a>
+  <a href="prototype-4.html" style="color:#d63384;text-decoration:none;margin:0 4px">P4</a>
+</div>
+
+</body>
+</html>
