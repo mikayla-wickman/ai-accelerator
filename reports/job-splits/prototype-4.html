@@ -409,52 +409,126 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                   <span id="fts-chev">▲</span>
                 </div>
                 <div id="fts-body">
-                  <table style="width:100%;border-collapse:collapse;font-size:13px">
-                    <thead>
-                      <tr>
-                        <th style="padding:10px 20px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Employee name</th>
-                        <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Status</th>
-                        <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total travel time</th>
-                        <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total time on job</th>
-                        <th style="padding:10px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Labor rate</th>
-                        <th style="padding:10px 20px 10px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total labor cost</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style="padding:14px 20px;border-bottom:1px solid var(--border)">
-                          <div class="tech-cell">
-                            <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
-                            <div>
-                              <div class="tech-name">Marcus Webb</div>
-                              <div class="tech-meta">Lead Technician</div>
+                  <!-- Table view -->
+                  <div id="fts-table-view">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px">
+                      <thead>
+                        <tr>
+                          <th style="padding:10px 20px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Employee name</th>
+                          <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Status</th>
+                          <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total travel time</th>
+                          <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total time on job</th>
+                          <th style="padding:10px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Labor rate</th>
+                          <th style="padding:10px 20px 10px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">Total labor cost</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr id="fts-row-1" onclick="ftsDrillIn(1)" style="cursor:pointer;transition:background 0.1s" onmouseenter="this.style.background='var(--bg-page)'" onmouseleave="this.style.background=''">
+                          <td style="padding:14px 20px;border-bottom:1px solid var(--border)">
+                            <div class="tech-cell">
+                              <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
+                              <div>
+                                <div class="tech-name">Marcus Webb</div>
+                                <div class="tech-meta">Lead Technician</div>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td style="padding:14px 12px;color:var(--text-primary);font-size:13px;border-bottom:1px solid var(--border)">Assigned</td>
-                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px;border-bottom:1px solid var(--border)">1h 0m</td>
-                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px;border-bottom:1px solid var(--border)">4h 30m</td>
-                        <td style="padding:14px 12px;text-align:right;font-size:13px;border-bottom:1px solid var(--border)">$50/hr</td>
-                        <td style="padding:14px 20px 14px 12px;text-align:right;font-size:13px;border-bottom:1px solid var(--border)">$275.00</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:14px 20px">
-                          <div class="tech-cell">
-                            <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
-                            <div>
-                              <div class="tech-name">Jamie Torres</div>
-                              <div class="tech-meta">Technician</div>
+                          </td>
+                          <td style="padding:14px 12px;color:var(--text-primary);font-size:13px;border-bottom:1px solid var(--border)">Assigned</td>
+                          <td id="fts-travel-1" style="padding:14px 12px;color:var(--text-muted);font-size:13px;border-bottom:1px solid var(--border)">1h 0m</td>
+                          <td id="fts-job-1" style="padding:14px 12px;color:var(--text-muted);font-size:13px;border-bottom:1px solid var(--border)">4h 30m</td>
+                          <td style="padding:14px 12px;text-align:right;font-size:13px;border-bottom:1px solid var(--border)">$50/hr</td>
+                          <td id="fts-cost-1" style="padding:14px 20px 14px 12px;text-align:right;font-size:13px;border-bottom:1px solid var(--border)">$275.00</td>
+                        </tr>
+                        <tr id="fts-row-2" onclick="ftsDrillIn(2)" style="cursor:pointer;transition:background 0.1s" onmouseenter="this.style.background='var(--bg-page)'" onmouseleave="this.style.background=''">
+                          <td style="padding:14px 20px">
+                            <div class="tech-cell">
+                              <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
+                              <div>
+                                <div class="tech-name">Jamie Torres</div>
+                                <div class="tech-meta">Technician</div>
+                              </div>
                             </div>
+                          </td>
+                          <td style="padding:14px 12px;color:var(--text-primary);font-size:13px">Assigned</td>
+                          <td id="fts-travel-2" style="padding:14px 12px;color:var(--text-muted);font-size:13px">0h 30m</td>
+                          <td id="fts-job-2" style="padding:14px 12px;color:var(--text-muted);font-size:13px">2h 0m</td>
+                          <td style="padding:14px 12px;text-align:right;font-size:13px">$20/hr</td>
+                          <td id="fts-cost-2" style="padding:14px 20px 14px 12px;text-align:right;font-size:13px">$50.00</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Drill-down edit view -->
+                  <div id="fts-detail-view" style="display:none">
+                    <div style="padding:10px 18px;border-bottom:1px solid var(--border)">
+                      <button onclick="ftsBack()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--primary);font-weight:600;padding:4px 0;display:flex;align-items:center;gap:5px;font-family:var(--font)">&#8592; Field tech status</button>
+                    </div>
+                    <div style="padding:16px 20px 0">
+                      <div class="tech-cell" style="margin-bottom:18px">
+                        <div id="fts-detail-avatar" class="tech-avatar" style="background:#e8f0ff;color:#0057ff;width:40px;height:40px;font-size:13px">MW</div>
+                        <div>
+                          <div id="fts-detail-name" style="font-size:15px;font-weight:700;color:var(--text-primary)">Marcus Webb</div>
+                          <div id="fts-detail-role" class="tech-meta">Lead Technician</div>
+                        </div>
+                      </div>
+
+                      <div class="section-heading" style="margin-bottom:14px">
+                        <div class="section-heading-title">Travel time</div>
+                        <div class="section-heading-line"></div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                        <div style="display:flex;align-items:center;gap:8px">
+                          <div class="stepper">
+                            <button class="stepper-btn" onclick="ftsAdjust('travel','h',-1)">&#8722;</button>
+                            <input class="stepper-val" id="fts-travel-h" type="number" value="1" min="0" max="23" style="width:44px">
+                            <button class="stepper-btn" onclick="ftsAdjust('travel','h',1)">+</button>
                           </div>
-                        </td>
-                        <td style="padding:14px 12px;color:var(--text-primary);font-size:13px">Assigned</td>
-                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px">0h 30m</td>
-                        <td style="padding:14px 12px;color:var(--text-muted);font-size:13px">2h 0m</td>
-                        <td style="padding:14px 12px;text-align:right;font-size:13px">$20/hr</td>
-                        <td style="padding:14px 20px 14px 12px;text-align:right;font-size:13px">$50.00</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                          <span style="font-size:13px;color:var(--text-muted);font-weight:600">hr</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                          <div class="stepper">
+                            <button class="stepper-btn" onclick="ftsAdjust('travel','m',-15)">&#8722;</button>
+                            <input class="stepper-val" id="fts-travel-m" type="number" value="0" min="0" max="59" style="width:44px">
+                            <button class="stepper-btn" onclick="ftsAdjust('travel','m',15)">+</button>
+                          </div>
+                          <span style="font-size:13px;color:var(--text-muted);font-weight:600">min</span>
+                        </div>
+                      </div>
+
+                      <div class="section-heading" style="margin-bottom:14px">
+                        <div class="section-heading-title">Time on job</div>
+                        <div class="section-heading-line"></div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+                        <div style="display:flex;align-items:center;gap:8px">
+                          <div class="stepper">
+                            <button class="stepper-btn" onclick="ftsAdjust('job','h',-1)">&#8722;</button>
+                            <input class="stepper-val" id="fts-job-h" type="number" value="4" min="0" max="23" style="width:44px">
+                            <button class="stepper-btn" onclick="ftsAdjust('job','h',1)">+</button>
+                          </div>
+                          <span style="font-size:13px;color:var(--text-muted);font-weight:600">hr</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                          <div class="stepper">
+                            <button class="stepper-btn" onclick="ftsAdjust('job','m',-15)">&#8722;</button>
+                            <input class="stepper-val" id="fts-job-m" type="number" value="30" min="0" max="59" style="width:44px">
+                            <button class="stepper-btn" onclick="ftsAdjust('job','m',15)">+</button>
+                          </div>
+                          <span style="font-size:13px;color:var(--text-muted);font-weight:600">min</span>
+                        </div>
+                      </div>
+
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border);margin-bottom:16px">
+                        <span style="font-size:13px;font-weight:600;color:var(--text-muted)">Total labor cost</span>
+                        <span id="fts-detail-cost" style="font-size:15px;font-weight:700;color:var(--text-primary)">$275.00</span>
+                      </div>
+                    </div>
+                    <div style="padding:0 20px 18px;display:flex;gap:10px">
+                      <button onclick="ftsSave()" style="flex:1;padding:9px;background:var(--primary);color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Save</button>
+                      <button onclick="ftsBack()" style="padding:9px 18px;background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Cancel</button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -502,7 +576,6 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                           <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
                           <div>
                             <div class="tech-name">Marcus Webb</div>
-                            <div class="tech-meta">Lead Technician</div>
                           </div>
                         </div>
                       </td>
@@ -522,7 +595,6 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                           <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
                           <div>
                             <div class="tech-name">Jamie Torres</div>
-                            <div class="tech-meta">Technician</div>
                           </div>
                         </div>
                       </td>
@@ -1208,6 +1280,70 @@ updateDisplay();
 pullRevSplits();
 applyMatchToggleState();
 refreshCommCalc();
+
+// Field tech status drill-in
+var ftsData = {
+  1: { name:'Marcus Webb', role:'Lead Technician', initials:'MW', avatarBg:'#e8f0ff', avatarColor:'#0057ff', travelH:1, travelM:0, jobH:4, jobM:30, rate:50 },
+  2: { name:'Jamie Torres', role:'Technician', initials:'JT', avatarBg:'#e6f7ee', avatarColor:'#00a344', travelH:0, travelM:30, jobH:2, jobM:0, rate:20 }
+};
+var ftsCurrent = null;
+
+function ftsDrillIn(tech) {
+  ftsCurrent = tech;
+  var d = ftsData[tech];
+  document.getElementById('fts-detail-avatar').textContent = d.initials;
+  document.getElementById('fts-detail-avatar').style.background = d.avatarBg;
+  document.getElementById('fts-detail-avatar').style.color = d.avatarColor;
+  document.getElementById('fts-detail-name').textContent = d.name;
+  document.getElementById('fts-detail-role').textContent = d.role;
+  document.getElementById('fts-travel-h').value = d.travelH;
+  document.getElementById('fts-travel-m').value = d.travelM;
+  document.getElementById('fts-job-h').value = d.jobH;
+  document.getElementById('fts-job-m').value = d.jobM;
+  ftsUpdateDetailCost();
+  document.getElementById('fts-table-view').style.display = 'none';
+  document.getElementById('fts-detail-view').style.display = '';
+}
+
+function ftsBack() {
+  document.getElementById('fts-detail-view').style.display = 'none';
+  document.getElementById('fts-table-view').style.display = '';
+  ftsCurrent = null;
+}
+
+function ftsAdjust(type, unit, delta) {
+  var id = 'fts-' + type + '-' + unit;
+  var el = document.getElementById(id);
+  var max = unit === 'h' ? 23 : 59;
+  el.value = Math.max(0, Math.min(max, (parseInt(el.value) || 0) + delta));
+  ftsUpdateDetailCost();
+}
+
+function ftsUpdateDetailCost() {
+  if (!ftsCurrent) return;
+  var d = ftsData[ftsCurrent];
+  var tH = parseInt(document.getElementById('fts-travel-h').value) || 0;
+  var tM = parseInt(document.getElementById('fts-travel-m').value) || 0;
+  var jH = parseInt(document.getElementById('fts-job-h').value) || 0;
+  var jM = parseInt(document.getElementById('fts-job-m').value) || 0;
+  var total = (tH + tM/60 + jH + jM/60) * d.rate;
+  document.getElementById('fts-detail-cost').textContent = '$' + total.toFixed(2);
+}
+
+function ftsSave() {
+  var d = ftsData[ftsCurrent];
+  var tH = parseInt(document.getElementById('fts-travel-h').value) || 0;
+  var tM = parseInt(document.getElementById('fts-travel-m').value) || 0;
+  var jH = parseInt(document.getElementById('fts-job-h').value) || 0;
+  var jM = parseInt(document.getElementById('fts-job-m').value) || 0;
+  d.travelH = tH; d.travelM = tM; d.jobH = jH; d.jobM = jM;
+  var fmtTime = function(h,m){ return h + 'h ' + m + 'm'; };
+  document.getElementById('fts-travel-' + ftsCurrent).textContent = fmtTime(tH, tM);
+  document.getElementById('fts-job-' + ftsCurrent).textContent = fmtTime(jH, jM);
+  var total = (tH + tM/60 + jH + jM/60) * d.rate;
+  document.getElementById('fts-cost-' + ftsCurrent).textContent = '$' + total.toFixed(2);
+  ftsBack();
+}
 </script>
 
 </body>
