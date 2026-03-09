@@ -511,42 +511,63 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                     <span id="comm-chev" style="font-size:11px;color:var(--text-muted)">&#9650;</span>
                   </div>
                   <div id="figma-comm-body">
-                    <div class="figma-comm-basis">
-                      <span style="font-size:13px;color:var(--text-muted)">Commission basis:</span>
-                      <div style="display:flex;gap:4px">
-                        <button id="basis-rev" class="basis-btn active" onclick="setCommBasis('revenue')">Revenue</button>
-                        <button id="basis-gp" class="basis-btn" onclick="setCommBasis('gross_profit')">Gross profit</button>
+
+                    <!-- Commission basis section -->
+                    <div style="padding:16px 18px 14px;border-bottom:1px solid var(--border)">
+                      <div class="section-heading" style="margin-bottom:10px">
+                        <div class="section-heading-title">Commission basis</div>
+                        <div class="section-heading-line"></div>
+                        <a href="#" style="font-size:12px;color:var(--primary);text-decoration:none;white-space:nowrap;flex-shrink:0">Manage pay ↗</a>
                       </div>
-                      <a href="#" style="margin-left:auto;font-size:12px;color:var(--primary);text-decoration:none">Manage pay ↗</a>
-                    </div>
-                    <div id="gp-metrics" style="display:none;padding:12px 18px;background:#f5f8ff;border-bottom:1px solid var(--border)">
-                      <div style="display:flex;gap:28px">
-                        <div>
-                          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Adjusted gross profit</div>
-                          <div style="font-size:17px;font-weight:700">$1,890.00</div>
+                      <div class="chips-row" style="margin-bottom:0">
+                        <div id="basis-rev" class="chip active" onclick="setCommBasis('revenue')">Revenue</div>
+                        <div id="basis-gp" class="chip" onclick="setCommBasis('gross_profit')">Gross profit</div>
+                      </div>
+                      <div id="gp-metrics" style="display:none;margin-top:12px;padding:10px 14px;background:#f5f8ff;border-radius:6px;border:1px solid #c5d8f8">
+                        <div style="display:flex;gap:28px">
+                          <div>
+                            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Adjusted gross profit</div>
+                            <div style="font-size:17px;font-weight:700">$1,890.00</div>
+                          </div>
+                          <div>
+                            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Gross profit total</div>
+                            <div style="font-size:17px;font-weight:700">$2,100.00</div>
+                          </div>
                         </div>
+                      </div>
+                    </div>
+
+                    <!-- Type section -->
+                    <div id="comm-subtabs" style="padding:16px 18px 14px;border-bottom:1px solid var(--border)">
+                      <div class="section-heading" style="margin-bottom:10px">
+                        <div class="section-heading-title">Type</div>
+                        <div class="section-heading-line"></div>
+                      </div>
+                      <div class="chips-row" style="margin-bottom:0">
+                        <div id="stab-lineitems" class="chip" onclick="setCommTab('lineitems')">Line items</div>
+                        <div id="stab-manual" class="chip active" onclick="setCommTab('manual')">Manual splits</div>
+                      </div>
+                      <div id="comm-match-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 0 0;margin-top:12px;border-top:1px solid var(--border)">
                         <div>
-                          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Gross profit total</div>
-                          <div style="font-size:17px;font-weight:700">$2,100.00</div>
+                          <div style="font-size:13px;font-weight:600">Match job splits</div>
+                          <div style="font-size:12px;color:var(--text-muted)">Mirror the revenue attribution percentages above</div>
                         </div>
+                        <label class="toggle">
+                          <input type="checkbox" id="comm-match-toggle" checked onchange="onCommMatchToggle()">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                      <div id="comm-lineitems-content" style="display:none;padding:14px 0 2px;text-align:center;color:var(--text-muted);font-size:13px">
+                        Line item commission breakdown coming soon
                       </div>
                     </div>
-                    <div id="comm-subtabs" style="display:flex;border-bottom:2px solid var(--border);padding:0 18px;gap:4px">
-                      <button id="stab-lineitems" class="figma-stab" onclick="setCommTab('lineitems')">Line items</button>
-                      <button id="stab-manual" class="figma-stab active" onclick="setCommTab('manual')">Manual splits</button>
-                    </div>
-                    <div id="comm-match-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);background:#fafcff">
-                      <div>
-                        <div style="font-size:13px;font-weight:600">Match job splits</div>
-                        <div style="font-size:12px;color:var(--text-muted)">Mirror the revenue attribution percentages above</div>
+
+                    <!-- Commission payout section -->
+                    <div id="comm-payout-heading" style="padding:16px 18px 0">
+                      <div class="section-heading">
+                        <div class="section-heading-title">Commission payout</div>
+                        <div class="section-heading-line"></div>
                       </div>
-                      <label class="toggle">
-                        <input type="checkbox" id="comm-match-toggle" checked onchange="onCommMatchToggle()">
-                        <span class="toggle-slider"></span>
-                      </label>
-                    </div>
-                    <div id="comm-lineitems-content" style="display:none;padding:28px 18px;text-align:center;color:var(--text-muted);font-size:13px">
-                      Line item commission breakdown coming soon
                     </div>
                     <div id="comm-pool-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border)">
                       <span style="font-size:12px;font-weight:600;color:var(--text-muted)">Commission pool</span>
@@ -962,7 +983,7 @@ function setCommBasis(basis) {
   document.getElementById('basis-rev').classList.toggle('active', basis === 'revenue');
   document.getElementById('basis-gp').classList.toggle('active', basis === 'gross_profit');
   document.getElementById('gp-metrics').style.display = basis === 'gross_profit' ? 'block' : 'none';
-  document.getElementById('comm-subtabs').style.display = basis === 'revenue' ? 'flex' : 'none';
+  document.getElementById('comm-subtabs').style.display = basis === 'revenue' ? '' : 'none';
   if (basis === 'gross_profit') {
     document.getElementById('comm-match-row').style.display = 'flex';
     document.getElementById('comm-lineitems-content').style.display = 'none';
@@ -1010,7 +1031,7 @@ function applyMatchToggleState() {
 }
 
 function showCommContent(show) {
-  ['comm-pool-row','comm-work-table','comm-subtotal-row','comm-payout-row'].forEach(id => {
+  ['comm-payout-heading','comm-pool-row','comm-work-table','comm-subtotal-row','comm-payout-row'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = show ? '' : 'none';
   });
