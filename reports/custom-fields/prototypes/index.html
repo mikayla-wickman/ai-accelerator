@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flexible Fields &mdash; Design Directions | Housecall Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dk: #0046cc;
+      --primary-lt: #e8f1ff;
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --ink: #15181d;
+      --ink-2: #6b7487;
+      --border: #e1e6f2;
+      --green: #00a344;
+      --green-lt: #eaf7ef;
+      --amber: #bf8600;
+      --amber-lt: #fef9e6;
+      --red: #d81860;
+      --red-lt: #fceef4;
+      --ai: #623CC9;
+      --ai-lt: #f2eeff;
+      --r: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Open Sans', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.57;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    /* ── Top Nav ── */
+    .topnav {
+      background: #1B2636;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .topnav-logo {
+      display: flex; align-items: center; gap: 10px;
+      color: white; font-size: 15px; font-weight: 600; text-decoration: none;
+    }
+    .logo-icon {
+      width: 28px; height: 28px; background: var(--primary); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 13px; font-weight: 700;
+    }
+    .topnav-meta {
+      display: flex; align-items: center; gap: 16px;
+      color: rgba(255,255,255,.5); font-size: 12px;
+    }
+    .topnav-meta span { color: rgba(255,255,255,.7); }
+    .topnav-badge {
+      padding: 3px 10px; border-radius: 100px;
+      background: var(--ai-lt); color: var(--ai);
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, #1B2636 0%, #0f1923 60%, #15181d 100%);
+      padding: 64px 48px 56px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 100px; padding: 5px 14px;
+      color: rgba(255,255,255,.7); font-size: 12px; font-weight: 600;
+      margin-bottom: 20px; text-transform: uppercase; letter-spacing: .06em;
+    }
+    .hero h1 {
+      font-size: 40px; font-weight: 400; color: white; line-height: 1.2;
+      margin-bottom: 16px; max-width: 700px; margin-left: auto; margin-right: auto;
+    }
+    .hero h1 strong { font-weight: 600; }
+    .hero-sub {
+      font-size: 16px; color: rgba(255,255,255,.6); max-width: 560px;
+      margin: 0 auto 32px; line-height: 1.6;
+    }
+    .hero-meta {
+      display: flex; align-items: center; justify-content: center; gap: 24px;
+      font-size: 13px; color: rgba(255,255,255,.4);
+    }
+    .hero-meta-item { display: flex; align-items: center; gap: 6px; }
+    .hero-meta-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.2); }
+
+    /* ── Problem Frame ── */
+    .problem-band {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 48px;
+    }
+    .problem-inner {
+      max-width: 960px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;
+    }
+    .problem-stat {
+      text-align: center; padding: 4px;
+    }
+    .stat-num { font-size: 28px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--ink-2); }
+
+    /* ── Section Layout ── */
+    .section { padding: 56px 48px; }
+    .section-inner { max-width: 1120px; margin: 0 auto; }
+
+    .section-header { text-align: center; margin-bottom: 40px; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--primary); margin-bottom: 10px;
+    }
+    .section-title { font-size: 28px; font-weight: 400; color: var(--ink); margin-bottom: 8px; }
+    .section-sub { font-size: 16px; color: var(--ink-2); }
+
+    /* ── Prototype Cards Grid ── */
+    .prototypes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .proto-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .proto-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    /* Card color accents */
+    .proto-card.p1 { border-top: 3px solid var(--ai); }
+    .proto-card.p2 { border-top: 3px solid var(--primary); }
+    .proto-card.p3 { border-top: 3px solid var(--green); }
+
+    .proto-card-header { padding: 22px 22px 16px; }
+    .proto-num {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 8px;
+    }
+    .p1 .proto-num { color: var(--ai); }
+    .p2 .proto-num { color: var(--primary); }
+    .p3 .proto-num { color: var(--green); }
+
+    .proto-headline {
+      font-size: 18px; font-weight: 600; color: var(--ink);
+      line-height: 1.3; margin-bottom: 8px;
+    }
+    .proto-rationale { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+
+    .proto-divider { height: 1px; background: var(--border); margin: 0 22px; }
+
+    .proto-tone {
+      padding: 14px 22px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .tone-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+    .tone-value { font-size: 13px; font-weight: 600; }
+    .p1 .tone-value { color: var(--ai); }
+    .p2 .tone-value { color: var(--primary); }
+    .p3 .tone-value { color: var(--green); }
+
+    /* Journey Map */
+    .journey-map {
+      padding: 0 22px 16px;
+    }
+    .journey-map-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin-bottom: 10px; }
+    .journey-steps { display: flex; flex-direction: column; gap: 0; }
+    .j-step-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+      position: relative;
+    }
+    .j-step-item:last-child { border-bottom: none; }
+    .j-step-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+    .p1 .j-step-dot { background: var(--ai-lt); color: var(--ai); }
+    .p2 .j-step-dot { background: var(--primary-lt); color: var(--primary); }
+    .p3 .j-step-dot { background: var(--green-lt); color: var(--green); }
+    .j-step-content { }
+    .j-step-phase { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin-bottom: 1px; }
+    .j-step-desc { font-size: 13px; color: var(--ink); }
+
+    /* Pros / Cons */
+    .pros-cons { padding: 0 22px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .pros, .cons { }
+    .pc-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+    }
+    .pc-label.pro { color: var(--green); }
+    .pc-label.con { color: var(--red); }
+    .pc-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .pc-item { font-size: 12px; color: var(--ink-2); display: flex; gap: 6px; align-items: flex-start; }
+    .pc-item::before { flex-shrink: 0; margin-top: 2px; }
+    .pros .pc-item::before { content: '&#10003;'; color: var(--green); font-weight: 700; }
+    .cons .pc-item::before { content: '&#8722;'; color: var(--red); font-weight: 700; }
+
+    .proto-card-footer { padding: 16px 22px; margin-top: auto; border-top: 1px solid var(--border); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 4px;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; transition: all .15s;
+      text-decoration: none; line-height: 1.4;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); color: var(--ink); }
+    .btn-block { width: 100%; justify-content: center; }
+
+    /* ── Spectrum ── */
+    .spectrum-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    .spectrum-track {
+      position: relative;
+      height: 6px; background: linear-gradient(to right, var(--ai), var(--primary), var(--green));
+      border-radius: 3px; margin: 16px 0 8px;
+    }
+    .spectrum-labels {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--ink-2); font-weight: 600;
+    }
+    .spectrum-markers {
+      position: absolute; top: -5px; display: flex;
+      width: 100%; justify-content: space-between;
+    }
+    .spec-marker {
+      width: 16px; height: 16px; border-radius: 50%; border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .p1-marker { background: var(--ai); }
+    .p2-marker { background: var(--primary); }
+    .p3-marker { background: var(--green); }
+    .spec-tooltip {
+      font-size: 11px; font-weight: 600; color: var(--ink); white-space: nowrap;
+      margin-bottom: 4px;
+    }
+    .spec-dim-label { font-size: 10px; color: var(--ink-2); margin-bottom: 8px; }
+    .spec-bar {
+      height: 8px; border-radius: 4px; margin-bottom: 4px;
+    }
+
+    .spectrum-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+    }
+    .spec-dimension { }
+    .spec-dim-title { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+    .spec-row { margin-bottom: 10px; }
+    .spec-row-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+    .spec-bar-wrap { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+    .spec-bar-fill { height: 100%; border-radius: 4px; }
+
+    /* ── Context banner ── */
+    .context-band {
+      background: var(--bg); border-top: 1px solid var(--border);
+      padding: 40px 48px;
+    }
+    .context-inner { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .context-card { }
+    .context-card-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+    .context-card-body { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+    .context-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-bottom: 4px; }
+    .tag-blue { background: var(--primary-lt); color: var(--primary); }
+    .tag-ai { background: var(--ai-lt); color: var(--ai); }
+    .tag-green { background: var(--green-lt); color: var(--green); }
+
+    /* ── Footer ── */
+    .footer {
+      background: #1B2636; padding: 32px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-left { color: rgba(255,255,255,.4); font-size: 12px; }
+    .footer-left strong { color: rgba(255,255,255,.7); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-link { color: rgba(255,255,255,.5); font-size: 12px; text-decoration: none; }
+    .footer-link:hover { color: white; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1000px) {
+      .prototypes-grid { grid-template-columns: 1fr; }
+      .spectrum-grid { grid-template-columns: 1fr 1fr; }
+      .context-inner { grid-template-columns: 1fr; }
+      .hero { padding: 48px 24px; }
+      .section { padding: 40px 24px; }
+      .problem-inner { grid-template-columns: 1fr; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Nav -->
+  <nav class="topnav">
+    <a class="topnav-logo" href="#">
+      <div class="logo-icon">H</div>
+      Housecall Pro
+    </a>
+    <div class="topnav-meta">
+      <span>Flexible Fields</span>
+      <span>&#183;</span>
+      <span>Design Exploration</span>
+      <span>&#183;</span>
+      <span class="topnav-badge">3 Prototypes</span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+      Design Review &mdash; March 2026
+    </div>
+    <h1>Flexible Fields: <strong>Three Design Directions</strong></h1>
+    <p class="hero-sub">Three distinct approaches for how Pros create, manage, and get value from custom fields on customer records. Each prototype shows the full journey from setup to payoff.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        Owner &amp; Admin, Desktop Web
+      </div>
+      <div class="hero-meta-dot"></div>
+      <div class="hero-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        Phase 1: Customer Object
+      </div>
+      <div class="hero-meta-dot"></div>
+      <div class="hero-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Builds on existing Job Fields pattern
+      </div>
+    </div>
+  </div>
+
+  <!-- Problem Band -->
+  <div class="problem-band">
+    <div class="problem-inner">
+      <div class="problem-stat">
+        <div class="stat-num">6,206</div>
+        <div class="stat-label">customer feedback mentions for custom fields</div>
+      </div>
+      <div class="problem-stat">
+        <div class="stat-num">#1</div>
+        <div class="stat-label">product limitation cited by churned customers: lack of customization</div>
+      </div>
+      <div class="problem-stat">
+        <div class="stat-num">450+</div>
+        <div class="stat-label">Merry Maids locations blocked on structured churn reason tracking</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prototypes Grid -->
+  <div class="section">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-eyebrow">Three Design Directions</div>
+        <h2 class="section-title">From Promise to Payoff</h2>
+        <p class="section-sub">Each prototype shows the complete journey: how a Pro discovers, sets up, and gets value from custom fields.</p>
+      </div>
+
+      <div class="prototypes-grid">
+
+        <!-- ─── Prototype 1 ─── -->
+        <div class="proto-card p1">
+          <div class="proto-card-header">
+            <div class="proto-num">Prototype 1</div>
+            <div class="proto-headline">"Your trade, your fields &mdash; ready in 60 seconds"</div>
+            <div class="proto-rationale">Lead with pre-built industry templates. The product already knows what HVAC, plumbing, and cleaning pros need &mdash; no configuration required to get started.</div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="proto-tone">
+            <div>
+              <div class="tone-label">Emotional Tone</div>
+              <div class="tone-value">Intelligent &middot; Welcoming &middot; Time-saving</div>
+            </div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="journey-map">
+            <div class="journey-map-label" style="padding-top:14px;">Journey</div>
+            <div class="journey-steps">
+              <div class="j-step-item">
+                <div class="j-step-dot">P</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Promise</div>
+                  <div class="j-step-desc">Settings &rarr; "Pick your trade" &rarr; 8 industry cards</div>
+                </div>
+              </div>
+              <div class="j-step-item">
+                <div class="j-step-dot">2</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Activation</div>
+                  <div class="j-step-desc">HVAC template loads: 6 suggested fields, toggle on/off, rename any</div>
+                </div>
+              </div>
+              <div class="j-step-item">
+                <div class="j-step-dot">&#9679;</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Payoff</div>
+                  <div class="j-step-desc">Customer profile shows Equipment Brand, Type, Age, Warranty &mdash; filled and filterable</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="pros-cons">
+            <div class="pros">
+              <div class="pc-label pro">Strengths</div>
+              <ul class="pc-list">
+                <li class="pc-item">Lowest time-to-value; usable in &lt;2 minutes</li>
+                <li class="pc-item">Reduces decision fatigue with smart defaults</li>
+                <li class="pc-item">Industry templates = immediate relevance for new Pros</li>
+              </ul>
+            </div>
+            <div class="cons">
+              <div class="pc-label con">Tradeoffs</div>
+              <ul class="pc-list">
+                <li class="pc-item">Templates require maintenance as trades evolve</li>
+                <li class="pc-item">Less obvious path for unusual field types</li>
+                <li class="pc-item">May feel "opinionated" for power admins</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="proto-card-footer">
+            <a href="prototype-1.html" class="btn btn-primary btn-block" target="_blank">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              Open Interactive Prototype
+            </a>
+          </div>
+        </div>
+
+        <!-- ─── Prototype 2 ─── -->
+        <div class="proto-card p2">
+          <div class="proto-card-header">
+            <div class="proto-num">Prototype 2</div>
+            <div class="proto-headline">"Build fields where you need them, not in settings"</div>
+            <div class="proto-rationale">Contextual discovery and creation directly on the customer record. The field builder comes to you &mdash; no settings navigation required.</div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="proto-tone">
+            <div>
+              <div class="tone-label">Emotional Tone</div>
+              <div class="tone-value">Effortless &middot; Immediate &middot; In-context</div>
+            </div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="journey-map">
+            <div class="journey-map-label" style="padding-top:14px;">Journey</div>
+            <div class="journey-steps">
+              <div class="j-step-item">
+                <div class="j-step-dot">P</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Promise</div>
+                  <div class="j-step-desc">Customer profile &rarr; empty "Custom Fields" section &rarr; dashed "+ Add field" CTA</div>
+                </div>
+              </div>
+              <div class="j-step-item">
+                <div class="j-step-dot">2</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Creation</div>
+                  <div class="j-step-desc">Right drawer slides in: name, type picker, dropdown options, required toggle</div>
+                </div>
+              </div>
+              <div class="j-step-item">
+                <div class="j-step-dot">&#9679;</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Payoff</div>
+                  <div class="j-step-desc">Field appears inline immediately. Gate Code filled, Churn Reason ready to set.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="pros-cons">
+            <div class="pros">
+              <div class="pc-label pro">Strengths</div>
+              <ul class="pc-list">
+                <li class="pc-item">Zero context switching &mdash; stays in the workflow</li>
+                <li class="pc-item">Immediate feedback: create &rarr; fill in one motion</li>
+                <li class="pc-item">Natural fit for CSRs working live on profiles</li>
+              </ul>
+            </div>
+            <div class="cons">
+              <div class="pc-label con">Tradeoffs</div>
+              <ul class="pc-list">
+                <li class="pc-item">Harder to get a bird's-eye view of all fields</li>
+                <li class="pc-item">Bulk management (reorder, archive) needs a separate surface</li>
+                <li class="pc-item">Discoverability relies on seeing the empty state</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="proto-card-footer">
+            <a href="prototype-2.html" class="btn btn-primary btn-block" target="_blank">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              Open Interactive Prototype
+            </a>
+          </div>
+        </div>
+
+        <!-- ─── Prototype 3 ─── -->
+        <div class="proto-card p3">
+          <div class="proto-card-header">
+            <div class="proto-num">Prototype 3</div>
+            <div class="proto-headline">"Every field. Every object. Total admin control."</div>
+            <div class="proto-rationale">A professional-grade field management system for admins who need precision: required rules, bulk management, and a live preview before publishing.</div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="proto-tone">
+            <div>
+              <div class="tone-label">Emotional Tone</div>
+              <div class="tone-value">Authoritative &middot; Organized &middot; Scalable</div>
+            </div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="journey-map">
+            <div class="journey-map-label" style="padding-top:14px;">Journey</div>
+            <div class="journey-steps">
+              <div class="j-step-item">
+                <div class="j-step-dot">P</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Promise</div>
+                  <div class="j-step-desc">Settings &rarr; Field Manager table &rarr; 5 existing fields, status, required toggles</div>
+                </div>
+              </div>
+              <div class="j-step-item">
+                <div class="j-step-dot">2</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Configuration</div>
+                  <div class="j-step-desc">New Field modal: type selector, dropdown options, 3 rule toggles, live preview panel</div>
+                </div>
+              </div>
+              <div class="j-step-item">
+                <div class="j-step-dot">&#9679;</div>
+                <div class="j-step-content">
+                  <div class="j-step-phase">Payoff</div>
+                  <div class="j-step-desc">Customer List View &mdash; filtered by Churn Reason + Warranty Expiry, export to CSV</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="proto-divider"></div>
+
+          <div class="pros-cons">
+            <div class="pros">
+              <div class="pc-label pro">Strengths</div>
+              <ul class="pc-list">
+                <li class="pc-item">Best for franchise standardization (Neighborly, ServiceMaster)</li>
+                <li class="pc-item">Live preview reduces errors before publishing</li>
+                <li class="pc-item">Reporting payoff is most explicit and actionable</li>
+              </ul>
+            </div>
+            <div class="cons">
+              <div class="pc-label con">Tradeoffs</div>
+              <ul class="pc-list">
+                <li class="pc-item">Higher cognitive load for first-time setup</li>
+                <li class="pc-item">Settings-first path may feel distant from daily work</li>
+                <li class="pc-item">Overkill for small teams with 1&ndash;2 simple fields</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="proto-card-footer">
+            <a href="prototype-3.html" class="btn btn-primary btn-block" target="_blank">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              Open Interactive Prototype
+            </a>
+          </div>
+        </div>
+
+      </div><!-- /prototypes-grid -->
+    </div>
+  </div>
+
+  <!-- Spectrum Comparison -->
+  <div class="spectrum-section section">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-eyebrow">Design Spectrum</div>
+        <h2 class="section-title">Where Each Prototype Sits</h2>
+        <p class="section-sub">These three directions span a deliberate range across four key dimensions.</p>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px 32px;">
+        <div class="spectrum-grid">
+
+          <div class="spec-dimension">
+            <div class="spec-dim-title">Time to First Value</div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--ai);">P1 Smart Start</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:95%;background:var(--ai);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--primary);">P2 In Context</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:80%;background:var(--primary);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--green);">P3 Control Center</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:50%;background:var(--green);"></div></div>
+            </div>
+          </div>
+
+          <div class="spec-dimension">
+            <div class="spec-dim-title">Admin Control Depth</div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--ai);">P1 Smart Start</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:45%;background:var(--ai);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--primary);">P2 In Context</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:60%;background:var(--primary);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--green);">P3 Control Center</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:95%;background:var(--green);"></div></div>
+            </div>
+          </div>
+
+          <div class="spec-dimension">
+            <div class="spec-dim-title">Reporting &amp; List Payoff</div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--ai);">P1 Smart Start</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:55%;background:var(--ai);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--primary);">P2 In Context</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:55%;background:var(--primary);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--green);">P3 Control Center</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:95%;background:var(--green);"></div></div>
+            </div>
+          </div>
+
+          <div class="spec-dimension">
+            <div class="spec-dim-title">Franchise / Enterprise Fit</div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--ai);">P1 Smart Start</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:40%;background:var(--ai);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--primary);">P2 In Context</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:30%;background:var(--primary);"></div></div>
+            </div>
+            <div class="spec-row">
+              <div class="spec-row-label" style="color:var(--green);">P3 Control Center</div>
+              <div class="spec-bar-wrap"><div class="spec-bar-fill" style="width:90%;background:var(--green);"></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Context / Discussion -->
+  <div class="context-band">
+    <div style="max-width:1120px;margin:0 auto;">
+      <div style="margin-bottom:28px;">
+        <div class="section-eyebrow" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);margin-bottom:8px;">Context</div>
+        <h2 style="font-size:22px;font-weight:400;color:var(--ink);">What Each Prototype Solves Best</h2>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--ai);border-radius:var(--r);padding:20px;">
+          <div style="font-size:13px;font-weight:700;color:var(--ai);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">P1 &mdash; Smart Start</div>
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;">Best for new Pro onboarding and SMBs</div>
+          <div style="font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px;">When we want to reduce time-to-value and make HCP feel instantly relevant to a trade. Industry templates accelerate onboarding and reduce the blank slate problem.</div>
+          <div>
+            <span class="context-tag tag-ai">HVAC</span>
+            <span class="context-tag tag-ai">Plumbing</span>
+            <span class="context-tag tag-ai">Cleaning</span>
+            <span class="context-tag tag-ai">New Pros</span>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:var(--r);padding:20px;">
+          <div style="font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">P2 &mdash; In Context</div>
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;">Best for CSRs and office managers working live</div>
+          <div style="font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px;">When the person setting up fields is the same person using them. Contextual creation removes the barrier of navigating to settings &mdash; the field appears exactly where it's needed.</div>
+          <div>
+            <span class="context-tag tag-blue">Office Manager</span>
+            <span class="context-tag tag-blue">CSR</span>
+            <span class="context-tag tag-blue">Live Workflow</span>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:var(--r);padding:20px;">
+          <div style="font-size:13px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">P3 &mdash; Control Center</div>
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;">Best for franchises, enterprise, and data-driven owners</div>
+          <div style="font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px;">When data standardization and reporting are the primary goals. Unblocks Neighborly key codes and ServiceMaster churn tracking &mdash; the franchise governance layer needs this surface.</div>
+          <div>
+            <span class="context-tag tag-green">Franchise</span>
+            <span class="context-tag tag-green">Neighborly</span>
+            <span class="context-tag tag-green">ServiceMaster</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:24px;padding:18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:flex-start;gap:14px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--amber)" style="flex-shrink:0;margin-top:1px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;">Synthesis note</div>
+          <div style="font-size:13px;color:var(--ink-2);line-height:1.6;">These are not mutually exclusive. A final solution might combine P3's Settings table (for admin governance) with P2's contextual discovery empty state (for CSR adoption), seeded with P1's industry templates at first launch. The three directions are meant to surface what matters most to each user segment so we can make a deliberate tradeoff.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      <strong>Housecall Pro</strong> &mdash; Flexible Fields Design Exploration &middot; March 2026
+    </div>
+    <div class="footer-links">
+      <a href="prototype-1.html" class="footer-link" target="_blank">Prototype 1</a>
+      <a href="prototype-2.html" class="footer-link" target="_blank">Prototype 2</a>
+      <a href="prototype-3.html" class="footer-link" target="_blank">Prototype 3</a>
+    </div>
+  </footer>
+
+</body>
+</html>

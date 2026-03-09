@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prototype 3: Control Center — Flexible Fields | Housecall Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dk: #0046cc;
+      --primary-lt: #e8f1ff;
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --ink: #15181d;
+      --ink-2: #6b7487;
+      --border: #e1e6f2;
+      --green: #00a344;
+      --green-lt: #eaf7ef;
+      --amber: #bf8600;
+      --amber-lt: #fef9e6;
+      --red: #d81860;
+      --red-lt: #fceef4;
+      --ai: #623CC9;
+      --ai-lt: #f2eeff;
+      --r: 8px;
+      --r-sm: 4px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,.18);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Open Sans', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.57;
+      color: var(--ink);
+      background: var(--bg);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── App Shell ── */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    .sidebar {
+      width: 220px;
+      background: #1B2636;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar-logo {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      margin-bottom: 8px;
+    }
+    .logo-mark {
+      display: flex; align-items: center; gap: 10px;
+      color: white; font-size: 15px; font-weight: 600; text-decoration: none;
+    }
+    .logo-icon {
+      width: 30px; height: 30px; background: var(--primary); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 9px 20px;
+      color: rgba(255,255,255,.6); text-decoration: none;
+      font-size: 13px; font-weight: 600; border-radius: 6px;
+      margin: 1px 8px; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); }
+    .nav-item.active { background: rgba(255,255,255,.12); color: white; }
+    .nav-icon { width: 17px; height: 17px; flex-shrink: 0; }
+    .nav-divider { height: 1px; background: rgba(255,255,255,.08); margin: 6px 16px; }
+
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+      height: 56px; background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; flex-shrink: 0;
+    }
+    .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+    .breadcrumb-sep { opacity: .4; }
+    .breadcrumb-current { color: var(--ink); font-weight: 600; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary-lt); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+
+    .content { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+    /* ── Shared Components ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--r-sm);
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; transition: all .15s; line-height: 1.4;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+    .btn-outline:hover { background: var(--primary-lt); }
+    .btn-ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); color: var(--ink); }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
+    .btn-link { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 13px; padding: 0; cursor: pointer; font-family: inherit; }
+    .btn-icon { background: none; border: none; color: var(--ink-2); cursor: pointer; padding: 5px; border-radius: var(--r-sm); display: flex; align-items: center; }
+    .btn-icon:hover { background: var(--bg); color: var(--ink); }
+
+    .tag {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600;
+    }
+    .tag-blue  { background: var(--primary-lt); color: var(--primary); }
+    .tag-green { background: var(--green-lt); color: var(--green); }
+    .tag-amber { background: var(--amber-lt); color: var(--amber); }
+
+    .toggle { position: relative; width: 38px; height: 20px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0; background: var(--border);
+      border-radius: 100px; cursor: pointer; transition: background .2s;
+    }
+    .toggle-track::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%; background: white;
+      transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle input:checked + .toggle-track { background: var(--primary); }
+    .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+    /* ── Fields Page ── */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px;
+    }
+    .page-title { font-size: 22px; font-weight: 400; color: var(--ink); margin-bottom: 3px; }
+    .page-subtitle { font-size: 14px; color: var(--ink-2); }
+
+    .settings-layout { display: flex; gap: 0; }
+    .settings-nav {
+      width: 192px; flex-shrink: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 8px; margin-right: 16px; height: fit-content;
+    }
+    .snav-item {
+      display: block; padding: 8px 12px; border-radius: var(--r-sm);
+      font-size: 13px; font-weight: 600; color: var(--ink-2);
+      cursor: pointer; text-decoration: none; transition: all .15s;
+    }
+    .snav-item:hover { background: var(--bg); color: var(--ink); }
+    .snav-item.active { background: var(--primary-lt); color: var(--primary); }
+
+    .settings-content { flex: 1; min-width: 0; }
+
+    /* ── Table ── */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+    }
+    .table-toolbar {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px; border: 1px solid var(--border);
+      border-radius: var(--r-sm); background: var(--bg);
+      font-size: 13px; color: var(--ink-2); width: 220px;
+    }
+    .filter-select {
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      padding: 6px 10px; font-family: inherit; font-size: 13px;
+      color: var(--ink); outline: none; background: var(--surface); cursor: pointer;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg); }
+    th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--ink-2);
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--ink); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafbff; }
+
+    .field-name-cell { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .required-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+    .system-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 6px; border-radius: 100px;
+      font-size: 10px; font-weight: 600; letter-spacing: .03em;
+      background: var(--bg); border: 1px solid var(--border); color: var(--ink-2);
+    }
+    .type-chip {
+      display: inline-flex; align-items: center; padding: 2px 8px;
+      border-radius: var(--r-sm); background: var(--bg); border: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--ink-2);
+    }
+    .status-active { color: var(--green); font-size: 13px; font-weight: 600; }
+    .status-draft  { color: var(--ink-2); font-size: 13px; }
+
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: var(--ink); }
+    th.sortable .sort-icon { margin-left: 4px; opacity: .35; font-style: normal; }
+    th.sortable.asc  .sort-icon::after { content: '↑'; opacity: 1; }
+    th.sortable.desc .sort-icon::after { content: '↓'; opacity: 1; }
+    th.sortable:not(.asc):not(.desc) .sort-icon::after { content: '↕'; }
+
+    .table-footer {
+      margin-top: 12px; padding: 12px 16px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* ── Payoff Banner ── */
+    .payoff-banner {
+      margin-top: 16px; padding: 14px 20px;
+      background: var(--primary-lt); border: 1px solid rgba(0,87,255,.2); border-radius: var(--r);
+      display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--primary);
+    }
+
+    /* ── Modal Overlay ── */
+    /* Position: fixed on a direct child of <body> — no overflow clipping possible */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(21, 24, 29, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface); border-radius: var(--r);
+      width: 700px; max-height: 88vh;
+      display: flex; flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .modal-title { font-size: 18px; font-weight: 400; color: var(--ink); }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: none; background: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; color: var(--ink-2);
+      font-size: 18px; line-height: 1;
+    }
+    .modal-close:hover { background: var(--bg); }
+    .modal-body { flex: 1; overflow: hidden; display: flex; }
+    .modal-left  { flex: 1; padding: 24px; border-right: 1px solid var(--border); min-width: 0; overflow-y: auto; }
+    .modal-right { width: 232px; padding: 20px; background: var(--bg); flex-shrink: 0; overflow-y: auto; }
+    .modal-footer {
+      padding: 16px 24px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 10px; flex-shrink: 0;
+    }
+
+    /* ── Form Elements ── */
+    .form-row { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; }
+    .form-label .req { color: var(--red); margin-left: 2px; }
+    .form-input {
+      width: 100%; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      font-family: inherit; font-size: 14px; color: var(--ink); outline: none;
+      background: var(--surface);
+    }
+    .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-lt); }
+    .form-hint { font-size: 11px; color: var(--ink-2); margin-top: 4px; }
+
+    .type-list { display: flex; flex-direction: column; gap: 6px; }
+    .type-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 12px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); cursor: pointer; transition: all .15s;
+    }
+    .type-row:hover  { border-color: var(--primary); background: var(--primary-lt); }
+    .type-row.sel    { border-color: var(--primary); background: var(--primary-lt); }
+    .type-radio {
+      width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border);
+      flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s;
+    }
+    .type-row.sel .type-radio { border-color: var(--primary); }
+    .type-row.sel .type-radio::after {
+      content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--primary);
+    }
+    .type-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .type-desc  { font-size: 11px; color: var(--ink-2); margin-top: 1px; }
+
+    .options-list { display: flex; flex-direction: column; gap: 6px; }
+    .option-row { display: flex; align-items: center; gap: 6px; cursor: default; }
+    .option-row.dragging { opacity: .4; }
+    .option-row.drag-over { outline: 2px dashed var(--primary); border-radius: var(--r-sm); outline-offset: 1px; }
+    .drag-handle {
+      color: var(--border); cursor: grab; flex-shrink: 0; padding: 2px 2px;
+      display: flex; align-items: center; user-select: none;
+    }
+    .drag-handle:active { cursor: grabbing; }
+    .drag-handle:hover { color: var(--ink-2); }
+    .option-row input {
+      flex: 1; padding: 6px 10px; border: 1px solid var(--border);
+      border-radius: var(--r-sm); font-family: inherit; font-size: 13px; outline: none;
+    }
+    .option-row input:focus { border-color: var(--primary); }
+    .rm-opt { border: none; background: none; color: var(--ink-2); cursor: pointer; padding: 3px; line-height: 1; font-size: 16px; }
+    .rm-opt:hover { color: var(--red); }
+
+    .rule-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-top: 1px solid var(--border);
+    }
+    .rule-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .rule-desc  { font-size: 12px; color: var(--ink-2); }
+
+    /* ── Preview Panel ── */
+    .preview-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin-bottom: 14px; }
+    .preview-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; margin-bottom: 12px; }
+    .preview-card-label { font-size: 11px; color: var(--ink-2); margin-bottom: 8px; }
+    .preview-field-name { font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+    .input-mock {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--border);
+      border-radius: var(--r-sm); background: var(--surface);
+      font-size: 13px; color: var(--ink-2); font-family: inherit;
+    }
+    .select-mock {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--r-sm);
+      background: var(--surface); font-size: 13px; color: var(--ink-2);
+    }
+    .column-chip {
+      display: inline-block; font-size: 12px; font-weight: 600;
+      color: var(--primary); padding: 4px 8px;
+      background: var(--primary-lt); border-radius: 4px;
+    }
+    .preview-note { font-size: 11px; color: var(--ink-2); line-height: 1.5; }
+
+    /* ── Row action menu ── */
+    .action-wrap { position: relative; }
+    .action-menu {
+      display: none;
+      position: absolute; right: 0; top: calc(100% + 4px);
+      z-index: 500;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-sm); box-shadow: var(--shadow-lg);
+      min-width: 140px; padding: 4px 0; white-space: nowrap;
+    }
+    .action-menu.open { display: block; }
+    .action-menu-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; font-size: 13px; color: var(--ink);
+      cursor: pointer; background: none; border: none;
+      width: 100%; text-align: left; font-family: inherit;
+    }
+    .action-menu-item:hover { background: var(--bg); }
+    .action-menu-item.danger { color: var(--red); }
+    .action-menu-item.danger:hover { background: var(--red-lt); }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════════════════ -->
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a class="logo-mark" href="#">
+        <div class="logo-icon">H</div>
+        <span>Housecall Pro</span>
+      </a>
+    </div>
+    <nav>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        Customers
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.34C18 2.09 15.91 0 13.34 0c-1.3 0-2.43.52-3.27 1.35L9 2.48 7.93 1.35C7.1.52 5.96 0 4.66 0 2.09 0 0 2.09 0 4.66c0 .46.11.9.18 1.34H0v2h20V6zm-1 2H1v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8z"/></svg>
+        Jobs
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+        Schedule
+      </a>
+      <div class="nav-divider"></div>
+      <a class="nav-item active" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div class="breadcrumb">
+        <span>Settings</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Fields</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:12px;color:var(--ink-2);">Jade's HVAC Co.</span>
+        <div class="avatar">JA</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="settings-layout">
+
+        <!-- Sub-nav -->
+        <nav class="settings-nav">
+          <a class="snav-item active">Fields</a>
+          <a class="snav-item">Tags</a>
+          <a class="snav-item">Checklists</a>
+        </nav>
+
+        <!-- Table -->
+        <div class="settings-content">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Fields</h1>
+              <p class="page-subtitle">Define custom fields for customers, jobs, and estimates. Fields appear on records and are available as list filters.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('new')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              New Field
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-toolbar">
+              <div class="search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <span>Search fields…</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:13px;color:var(--ink-2);">Appears on:</span>
+                <select class="filter-select">
+                  <option>All record types</option>
+                  <option>Customer</option>
+                  <option>Job</option>
+                  <option>Estimate</option>
+                </select>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th class="sortable" data-col="0" onclick="sortTable(this)">Field Name <i class="sort-icon"></i></th>
+                  <th class="sortable" data-col="1" onclick="sortTable(this)">Type <i class="sort-icon"></i></th>
+                  <th class="sortable" data-col="2" onclick="sortTable(this)">Appears On <i class="sort-icon"></i></th>
+                  <th>Required</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <!-- ── Customer ── -->
+                <tr>
+                  <td>
+                    <div class="field-name-cell">Churn Reason</div>
+                    <div style="display:none;font-size:12px;color:var(--ink-2);margin-top:2px;">6 options · Price, Quality, Competitor…</div>
+                  </td>
+                  <td><span class="type-chip">Dropdown</span></td>
+                  <td data-objects="Customer"><span class="tag tag-blue">Customer</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Churn Reason',type:'dropdown',objects:['Customer'],required:false,options:['Price / Too Expensive','Service Quality','Switched to Competitor','Moved / Relocated','No Longer Needs Service','Other']})">Edit</button>
+                      <button class="btn-icon" title="More">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="field-name-cell">Gate / Access Code</div>
+                    <div style="display:none;font-size:12px;color:var(--ink-2);margin-top:2px;">Alphanumeric entry code</div>
+                  </td>
+                  <td><span class="type-chip">Text</span></td>
+                  <td data-objects="Customer"><span class="tag tag-blue">Customer</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Gate / Access Code',type:'text',objects:['Customer'],required:false,options:[]})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                          <button class="action-menu-item danger" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="field-name-cell">Customer Type</div>
+                    <div style="display:none;font-size:12px;color:var(--ink-2);margin-top:2px;">Residential, Commercial, Property Mgmt</div>
+                  </td>
+                  <td><span class="type-chip">Dropdown</span></td>
+                  <td data-objects="Customer"><span class="tag tag-blue">Customer</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Customer Type',type:'dropdown',objects:['Customer'],required:false,options:['Residential','Commercial','Property Management']})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                          <button class="action-menu-item danger" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- ── Job ── -->
+                <tr>
+                  <td>
+                    <div class="field-name-cell">PO Number</div>
+                    <div style="display:none;font-size:12px;color:var(--ink-2);margin-top:2px;">Purchase order for commercial billing</div>
+                  </td>
+                  <td><span class="type-chip">Text</span></td>
+                  <td data-objects="Job|Estimate"><span class="tag tag-green">Job</span> <span class="tag tag-amber">Estimate</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'PO Number',type:'text',objects:['Job','Estimate'],required:false,options:[]})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                          <button class="action-menu-item danger" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="field-name-cell">Callback Reason</div>
+                    <div style="display:none;font-size:12px;color:var(--ink-2);margin-top:2px;">Why a return visit was required</div>
+                  </td>
+                  <td><span class="type-chip">Dropdown</span></td>
+                  <td data-objects="Job"><span class="tag tag-green">Job</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Callback Reason',type:'dropdown',objects:['Job'],required:false,options:['Incomplete repair','Wrong part installed','Customer request','Warranty follow-up']})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                          <button class="action-menu-item danger" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- ── Estimate ── -->
+                <tr>
+                  <td>
+                    <div class="field-name-cell">Discount Reason</div>
+                    <div style="display:none;font-size:12px;color:var(--ink-2);margin-top:2px;">Why a price reduction was applied</div>
+                  </td>
+                  <td><span class="type-chip">Dropdown</span></td>
+                  <td data-objects="Job|Estimate"><span class="tag tag-green">Job</span> <span class="tag tag-amber">Estimate</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Discount Reason',type:'dropdown',objects:['Job','Estimate'],required:false,options:['Loyalty discount','Promotional offer','Competitive match','Senior / Military']})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                          <button class="action-menu-item danger" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="field-name-cell"><div class="required-dot"></div>Site Contact</div>
+                    <div style="display:none;font-size:12px;color:var(--ink-2);margin-top:2px;">On-site contact name for the visit</div>
+                  </td>
+                  <td><span class="type-chip">Text</span></td>
+                  <td data-objects="Customer"><span class="tag tag-blue">Customer</span></td>
+                  <td style="color:var(--ink);font-size:13px;">Yes</td>
+                  <td><span class="status-draft">● Draft</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Site Contact',type:'text',objects:['Customer'],required:true,options:[]})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                          <button class="action-menu-item danger" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- ── System fields ── -->
+                <tr>
+                  <td>
+                    <div class="field-name-cell">
+                      Job Type
+                      <span class="system-badge">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        System
+                      </span>
+                    </div>
+                  </td>
+                  <td><span class="type-chip">Dropdown</span></td>
+                  <td data-objects="Job|Estimate"><span class="tag tag-green">Job</span> <span class="tag tag-amber">Estimate</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Job Type',type:'dropdown',objects:['Job','Estimate'],required:false,system:true,options:['Residential Service','Commercial Service','Installation','Maintenance','Emergency']})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="field-name-cell">
+                      Business Unit
+                      <span class="system-badge">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        System
+                      </span>
+                    </div>
+                  </td>
+                  <td><span class="type-chip">Dropdown</span></td>
+                  <td data-objects="Job|Estimate"><span class="tag tag-green">Job</span> <span class="tag tag-amber">Estimate</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Business Unit',type:'dropdown',objects:['Job','Estimate'],required:false,system:true,options:['Residential','Commercial','Industrial']})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="field-name-cell">
+                      Callback
+                      <span class="system-badge">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        System
+                      </span>
+                    </div>
+                  </td>
+                  <td><span class="type-chip">Yes / No</span></td>
+                  <td data-objects="Job"><span class="tag tag-green">Job</span></td>
+                  <td style="color:var(--ink-2);font-size:13px;">No</td>
+                  <td><span class="status-active">● Active</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-ghost btn-sm" onclick="openModal('edit',{name:'Callback',type:'boolean',objects:['Job'],required:false,system:true,options:[]})">Edit</button>
+                      <div class="action-wrap">
+                        <button class="btn-icon" title="More" onclick="toggleMenu(this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+                        <div class="action-menu">
+                          <button class="action-menu-item" onclick="closeAllMenus()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Duplicate
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+
+        </div><!-- /settings-content -->
+      </div><!-- /settings-layout -->
+
+    </main>
+  </div><!-- /main -->
+</div><!-- /app -->
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PAYOFF: Customer List (separate view, toggled via button)
+═══════════════════════════════════════════════════════ -->
+<div id="payoff-view" style="display:none; position:fixed; inset:0; z-index:100; background:var(--bg); overflow-y:auto; padding:32px 40px;">
+  <div style="max-width:960px; margin:0 auto;">
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:20px;" onclick="hidePayoff()">← Back to Fields</button>
+
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <h1 class="page-title">Customers</h1>
+        <p class="page-subtitle">248 customers · Filtered: Churn Reason is set · Warranty expires within 90 days</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Export CSV
+        </button>
+        <button class="btn btn-primary btn-sm">+ New Customer</button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <span style="font-size:13px;color:var(--ink-2);font-weight:600;">Filters:</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;background:var(--surface);border:1.5px solid var(--primary);font-size:12px;font-weight:600;color:var(--primary);">
+        Churn Reason: any value
+        <span style="width:14px;height:14px;border-radius:50%;background:var(--primary);color:white;font-size:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">✕</span>
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;background:var(--surface);border:1.5px solid var(--primary);font-size:12px;font-weight:600;color:var(--primary);">
+        Warranty Expiry: next 90 days
+        <span style="width:14px;height:14px;border-radius:50%;background:var(--primary);color:white;font-size:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">✕</span>
+      </span>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+      <div style="padding:10px 16px;background:var(--primary-lt);border-bottom:1px solid rgba(0,87,255,.15);font-size:13px;color:var(--primary);font-weight:600;display:flex;align-items:center;justify-content:space-between;">
+        <span>14 customers match these filters</span>
+        <span style="font-size:12px;font-weight:400;">Sorted by: Warranty Expiry ↑</span>
+      </div>
+      <table style="width:100%;">
+        <thead>
+          <tr>
+            <th style="background:var(--bg);text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);border-bottom:1px solid var(--border);">Customer</th>
+            <th style="background:var(--bg);text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);border-bottom:1px solid var(--border);">Type</th>
+            <th style="background:var(--bg);text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);border-bottom:1px solid var(--border);">Last Job</th>
+            <th style="background:var(--primary-lt);text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);border-bottom:1px solid var(--border);">Churn Reason ↑</th>
+            <th style="background:var(--primary-lt);text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);border-bottom:1px solid var(--border);">Warranty Expiry</th>
+            <th style="background:var(--bg);border-bottom:1px solid var(--border);padding:10px 14px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:#fce4ef;color:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">RH</div>
+                <div><div style="font-weight:600;">Rivera Households LLC</div><div style="font-size:12px;color:var(--ink-2);">Austin, TX</div></div>
+              </div>
+            </td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink-2);">Commercial</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink-2);">Feb 14, 2026</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;"><span class="tag tag-amber">Price / Too Expensive</span></td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--amber);font-weight:600;">Apr 2, 2026</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);"><button class="btn btn-ghost btn-sm">View</button></td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--primary-lt);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">TK</div>
+                <div><div style="font-weight:600;">Tamara Kowalski</div><div style="font-size:12px;color:var(--ink-2);">Portland, OR</div></div>
+              </div>
+            </td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink-2);">Residential</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink-2);">Jan 28, 2026</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;"><span class="tag tag-amber">Switched to Competitor</span></td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--amber);font-weight:600;">May 18, 2026</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);"><button class="btn btn-ghost btn-sm">View</button></td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px;font-size:13px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--green-lt);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">NB</div>
+                <div><div style="font-weight:600;">Northside Business Park</div><div style="font-size:12px;color:var(--ink-2);">Denver, CO</div></div>
+              </div>
+            </td>
+            <td style="padding:12px 14px;font-size:13px;color:var(--ink-2);">Commercial</td>
+            <td style="padding:12px 14px;font-size:13px;color:var(--ink-2);">Mar 1, 2026</td>
+            <td style="padding:12px 14px;font-size:13px;color:var(--ink-2);font-style:italic;">Not set</td>
+            <td style="padding:12px 14px;font-size:13px;color:var(--green);font-weight:600;">Jun 1, 2026</td>
+            <td style="padding:12px 14px;"><button class="btn btn-ghost btn-sm">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:14px;padding:14px 20px;background:var(--primary-lt);border:1px solid rgba(0,87,255,.2);border-radius:var(--r);display:flex;align-items:center;gap:14px;font-size:13px;color:var(--primary);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-11h2V7h-2v2z"/></svg>
+      <span>Your custom fields are now live as filterable, sortable, exportable columns. Use them to build targeted retention reports.</span>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto;white-space:nowrap;">Build Report →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FIELD MODAL — direct child of <body> so position:fixed
+     is never clipped by .app overflow:hidden
+═══════════════════════════════════════════════════════ -->
+<div id="field-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="field-modal-inner">
+
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">New Field</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Left: configuration -->
+      <div class="modal-left">
+
+        <div class="form-row">
+          <label class="form-label">Field Name <span class="req">*</span></label>
+          <input type="text" class="form-input" id="modal-name" placeholder="e.g. Gate Code, PO Number, Churn Reason">
+          <div class="form-hint">This label appears on the record and as a column header in list view.</div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Appears On <span class="req">*</span></label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="modal-obj-customer" value="Customer"> Customer
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="modal-obj-job" value="Job"> Job
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="modal-obj-estimate" value="Estimate"> Estimate
+            </label>
+          </div>
+          <div class="form-hint">This field will appear on every selected record type.</div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Field Type <span class="req">*</span></label>
+          <div class="type-list" id="modal-type-list">
+            <div class="type-row" data-type="text" onclick="selectType(this)">
+              <div class="type-radio"></div>
+              <div><div class="type-label">Text</div><div class="type-desc">Free-form entry. Good for gate codes, PO numbers, notes.</div></div>
+            </div>
+            <div class="type-row" data-type="dropdown" onclick="selectType(this)">
+              <div class="type-radio"></div>
+              <div><div class="type-label">Dropdown</div><div class="type-desc">Choose from a predefined list. Best for standardized data.</div></div>
+            </div>
+            <div class="type-row" data-type="number" onclick="selectType(this)">
+              <div class="type-radio"></div>
+              <div><div class="type-label">Number</div><div class="type-desc">Numeric values. Good for age, count, or amounts.</div></div>
+            </div>
+            <div class="type-row" data-type="date" onclick="selectType(this)">
+              <div class="type-radio"></div>
+              <div><div class="type-label">Date</div><div class="type-desc">Calendar date. Good for warranty expiry or install dates.</div></div>
+            </div>
+            <div class="type-row" data-type="boolean" onclick="selectType(this)">
+              <div class="type-radio"></div>
+              <div><div class="type-label">Yes / No</div><div class="type-desc">Boolean toggle. Good for flags like "Has service contract."</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dropdown options (shown only when type=dropdown) -->
+        <div class="form-row" id="options-section" style="display:none;">
+          <label class="form-label">Dropdown Options</label>
+          <div class="options-list" id="options-list"></div>
+          <button class="btn-link" style="margin-top:8px;font-size:12px;display:flex;align-items:center;gap:4px;" onclick="addOption('')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Add option
+          </button>
+        </div>
+
+        <!-- Rules -->
+        <div class="rule-row">
+          <div><div class="rule-label">Required</div><div class="rule-desc">Enforce completion before saving the record</div></div>
+          <label class="toggle"><input type="checkbox" id="modal-required"><div class="toggle-track"></div></label>
+        </div>
+        <div class="rule-row">
+          <div><div class="rule-label">Show in List View</div><div class="rule-desc">Available as a column, filter, and sort option</div></div>
+          <label class="toggle"><input type="checkbox" checked id="modal-listview"><div class="toggle-track"></div></label>
+        </div>
+        <div class="rule-row">
+          <div><div class="rule-label">Include in CSV Export</div><div class="rule-desc">Field value appears in all record exports</div></div>
+          <label class="toggle"><input type="checkbox" checked id="modal-export"><div class="toggle-track"></div></label>
+        </div>
+
+      </div><!-- /modal-left -->
+
+      <!-- Right: live preview -->
+      <div class="modal-right">
+        <div class="preview-title">Live Preview</div>
+
+        <div class="preview-card">
+          <div class="preview-card-label">On Record</div>
+          <div class="preview-field-name" id="preview-label">Field name</div>
+          <div id="preview-input"></div>
+        </div>
+
+        <div class="preview-card">
+          <div class="preview-card-label">In List View</div>
+          <div style="font-size:11px;color:var(--ink-2);margin-bottom:6px;">Column header</div>
+          <div class="column-chip" id="preview-chip">Field name</div>
+        </div>
+
+        <div class="preview-note">This field will appear on all matching records immediately after publishing.</div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline" onclick="closeModal()">Save as Draft</button>
+      <button class="btn btn-primary" onclick="closeModal()">Save &amp; Publish</button>
+    </div>
+
+  </div><!-- /modal -->
+</div><!-- /modal-overlay -->
+
+
+<script>
+  var _currentType = null;
+
+  // ── Modal open/close ────────────────────────────────────
+
+  function openModal(mode, field) {
+    var overlay = document.getElementById('field-modal');
+    var titleEl = document.getElementById('modal-title');
+
+    if (mode === 'new') {
+      titleEl.textContent = 'New Field';
+      var nameInput = document.getElementById('modal-name');
+      nameInput.value = '';
+      nameInput.disabled = false;
+      nameInput.style.background = '';
+      nameInput.style.color = '';
+      ['customer','job','estimate'].forEach(function(o) {
+        document.getElementById('modal-obj-' + o).checked = false;
+      });
+      document.getElementById('modal-required').checked = false;
+      document.getElementById('modal-listview').checked = true;
+      document.getElementById('modal-export').checked = true;
+      clearTypeSelection();
+      document.getElementById('options-list').innerHTML = '';
+      document.getElementById('options-section').style.display = 'none';
+      _currentType = null;
+      refreshPreview();
+    } else {
+      titleEl.textContent = 'Edit Field';
+      var nameInput = document.getElementById('modal-name');
+      nameInput.value = field.name || '';
+      nameInput.disabled = !!field.system;
+      nameInput.style.background = field.system ? 'var(--bg)' : '';
+      nameInput.style.color = field.system ? 'var(--ink-2)' : '';
+      var objs = field.objects || (field.object ? [field.object] : []);
+      ['customer','job','estimate'].forEach(function(o) {
+        document.getElementById('modal-obj-' + o).checked =
+          objs.some(function(v) { return v.toLowerCase() === o; });
+      });
+      document.getElementById('modal-required').checked = !!field.required;
+      document.getElementById('modal-listview').checked = true;
+      document.getElementById('modal-export').checked = true;
+
+      // Select the right type row
+      clearTypeSelection();
+      var rows = document.querySelectorAll('#modal-type-list .type-row');
+      rows.forEach(function(r) {
+        if (r.getAttribute('data-type') === field.type) r.classList.add('sel');
+      });
+      _currentType = field.type || null;
+
+      // Populate dropdown options
+      var optList = document.getElementById('options-list');
+      optList.innerHTML = '';
+      if (field.type === 'dropdown') {
+        document.getElementById('options-section').style.display = 'block';
+        (field.options || []).forEach(function(v) { addOption(v); });
+      } else {
+        document.getElementById('options-section').style.display = 'none';
+      }
+
+      refreshPreview();
+    }
+
+    overlay.classList.add('open');
+    setTimeout(function() { document.getElementById('modal-name').focus(); }, 50);
+  }
+
+  function closeModal() {
+    document.getElementById('field-modal').classList.remove('open');
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('field-modal')) closeModal();
+  }
+
+  // ── Type selection ──────────────────────────────────────
+
+  function clearTypeSelection() {
+    document.querySelectorAll('#modal-type-list .type-row').forEach(function(r) {
+      r.classList.remove('sel');
+    });
+  }
+
+  function selectType(el) {
+    clearTypeSelection();
+    el.classList.add('sel');
+    _currentType = el.getAttribute('data-type');
+    document.getElementById('options-section').style.display =
+      (_currentType === 'dropdown') ? 'block' : 'none';
+    refreshPreview();
+  }
+
+  // ── Options ─────────────────────────────────────────────
+
+  var _dragSrc = null;
+
+  function addOption(value) {
+    var list = document.getElementById('options-list');
+    var row = document.createElement('div');
+    row.className = 'option-row';
+    row.draggable = true;
+
+    // Drag handle
+    var handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    handle.title = 'Drag to reorder';
+    handle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h2v2H9zm4 0h2v2h-2zM9 7h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zM9 15h2v2H9zm4 0h2v2h-2zM9 19h2v2H9zm4 0h2v2h-2z"/></svg>';
+
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.placeholder = 'Option label';
+    inp.value = value || '';
+    inp.addEventListener('input', refreshPreview);
+    // Prevent drag starting when typing in the input
+    inp.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+
+    var btn = document.createElement('button');
+    btn.className = 'rm-opt';
+    btn.title = 'Remove';
+    btn.textContent = '×';
+    btn.addEventListener('click', function() { row.remove(); refreshPreview(); });
+
+    row.appendChild(handle);
+    row.appendChild(inp);
+    row.appendChild(btn);
+    list.appendChild(row);
+
+    // Drag events
+    row.addEventListener('dragstart', function(e) {
+      _dragSrc = row;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', function() {
+      row.classList.remove('dragging');
+      document.querySelectorAll('.option-row').forEach(function(r) {
+        r.classList.remove('drag-over');
+      });
+      refreshPreview();
+    });
+    row.addEventListener('dragover', function(e) {
+      if (_dragSrc && _dragSrc !== row) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        document.querySelectorAll('.option-row').forEach(function(r) { r.classList.remove('drag-over'); });
+        row.classList.add('drag-over');
+      }
+    });
+    row.addEventListener('dragleave', function() {
+      row.classList.remove('drag-over');
+    });
+    row.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (_dragSrc && _dragSrc !== row) {
+        var list = document.getElementById('options-list');
+        var rows = Array.from(list.children);
+        var srcIdx = rows.indexOf(_dragSrc);
+        var tgtIdx = rows.indexOf(row);
+        if (srcIdx < tgtIdx) {
+          list.insertBefore(_dragSrc, row.nextSibling);
+        } else {
+          list.insertBefore(_dragSrc, row);
+        }
+        row.classList.remove('drag-over');
+        refreshPreview();
+      }
+    });
+  }
+
+  // ── Live preview ────────────────────────────────────────
+
+  function refreshPreview() {
+    var name = document.getElementById('modal-name').value.trim() || 'Field name';
+    document.getElementById('preview-label').textContent = name;
+    document.getElementById('preview-chip').textContent = name;
+
+    var wrap = document.getElementById('preview-input');
+    var type = _currentType;
+
+    if (!type || type === 'text') {
+      wrap.innerHTML = '<input class="input-mock" placeholder="Enter ' + esc(name) + '" disabled>';
+    } else if (type === 'dropdown') {
+      var opts = Array.from(document.querySelectorAll('#options-list input'))
+                      .map(function(i) { return i.value.trim(); })
+                      .filter(Boolean);
+      var first = opts.length ? opts[0] : 'Select…';
+      wrap.innerHTML = '<div class="select-mock"><span>' + esc(first) + '</span>' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></div>';
+    } else if (type === 'number') {
+      wrap.innerHTML = '<input class="input-mock" type="number" placeholder="0" disabled>';
+    } else if (type === 'date') {
+      wrap.innerHTML = '<input class="input-mock" placeholder="MM/DD/YYYY" disabled>';
+    } else if (type === 'boolean') {
+      wrap.innerHTML = '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<label class="toggle"><input type="checkbox" disabled><div class="toggle-track"></div></label>' +
+        '<span style="font-size:13px;color:var(--ink-2);">Yes / No</span></div>';
+    }
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Wire preview to name field
+  document.getElementById('modal-name').addEventListener('input', refreshPreview);
+
+  // ── Object filter ────────────────────────────────────────
+  var filterSelect = document.querySelector('.filter-select');
+  filterSelect.addEventListener('change', function() {
+    var val = this.value;
+    document.querySelectorAll('tbody tr').forEach(function(row) {
+      var cell = row.querySelectorAll('td')[2];
+      var objs = cell ? cell.getAttribute('data-objects') : '';
+      row.style.display = (val === 'All record types' || (objs && objs.indexOf(val) !== -1))
+        ? '' : 'none';
+    });
+  });
+
+  // ── Table sorting ────────────────────────────────────────
+
+  var _sortCol = null;
+  var _sortDir = 'asc';
+
+  function sortTable(th) {
+    var col = parseInt(th.getAttribute('data-col'));
+    if (_sortCol === col) {
+      _sortDir = (_sortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+      _sortCol = col;
+      _sortDir = 'asc';
+    }
+
+    // Update header indicators
+    document.querySelectorAll('th.sortable').forEach(function(h) {
+      h.classList.remove('asc', 'desc');
+    });
+    th.classList.add(_sortDir);
+
+    var tbody = th.closest('table').querySelector('tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort(function(a, b) {
+      var aVal = getCellText(a, col);
+      var bVal = getCellText(b, col);
+      return _sortDir === 'asc'
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    });
+
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  }
+
+  function getCellText(row, col) {
+    var cell = row.querySelectorAll('td')[col];
+    if (!cell) return '';
+    // col 0: field name — use the .field-name-cell text, ignoring the required-dot
+    if (col === 0) {
+      var nameEl = cell.querySelector('.field-name-cell');
+      return nameEl ? nameEl.textContent.trim() : cell.textContent.trim();
+    }
+    // col 1: type chip text
+    // col 2: object tag(s) — sort by joined, sorted list for consistent ordering
+    if (col === 2) {
+      var raw = cell.getAttribute('data-objects') || cell.textContent.trim();
+      return raw.split('|').sort().join('|');
+    }
+    return cell.textContent.trim();
+  }
+
+  // ── Row action menu ─────────────────────────────────────
+
+  function toggleMenu(btn) {
+    var menu = btn.nextElementSibling;
+    var isOpen = menu.classList.contains('open');
+    closeAllMenus();
+    if (!isOpen) menu.classList.add('open');
+  }
+
+  function closeAllMenus() {
+    document.querySelectorAll('.action-menu.open').forEach(function(m) {
+      m.classList.remove('open');
+    });
+  }
+
+  // Close menu when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.action-wrap')) closeAllMenus();
+  });
+
+  // ── Payoff view ─────────────────────────────────────────
+
+  function showPayoff() {
+    document.getElementById('payoff-view').style.display = 'block';
+  }
+  function hidePayoff() {
+    document.getElementById('payoff-view').style.display = 'none';
+  }
+
+  // Initialize preview
+  refreshPreview();
+</script>
+</body>
+</html>
