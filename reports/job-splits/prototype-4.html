@@ -454,7 +454,7 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                       <td>
                         <div class="stepper">
                           <button class="stepper-btn" id="rev-minus1" onclick="adjustRev(1,-5)">&#8722;</button>
-                          <input class="stepper-val" id="rev-pct1" type="number" value="50" min="0" max="100" oninput="onRevInput()" onchange="onRevInput()">
+                          <input class="stepper-val" id="rev-pct1" type="number" value="50" min="0" max="100" oninput="onRevInput(1)" onchange="onRevInput(1)">
                           <button class="stepper-btn" id="rev-plus1" onclick="adjustRev(1,5)">+</button>
                         </div>
                       </td>
@@ -474,7 +474,7 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                       <td>
                         <div class="stepper">
                           <button class="stepper-btn" id="rev-minus2" onclick="adjustRev(2,-5)">&#8722;</button>
-                          <input class="stepper-val" id="rev-pct2" type="number" value="50" min="0" max="100" disabled oninput="onRevInput()" onchange="onRevInput()">
+                          <input class="stepper-val" id="rev-pct2" type="number" value="50" min="0" max="100" disabled oninput="onRevInput(2)" onchange="onRevInput(2)">
                           <button class="stepper-btn" id="rev-plus2" onclick="adjustRev(2,5)">+</button>
                         </div>
                       </td>
@@ -871,7 +871,7 @@ function setRevPcts(p1, p2, enableCustom) {
     const btn = document.getElementById(id);
     if (btn) btn.disabled = false; // steppers always work
   });
-  i2.disabled = true; // pct2 always auto-computed
+  i2.disabled = !enableCustom;
 }
 
 // ── Stepper controls ───────────────────────────────────
@@ -891,9 +891,14 @@ function adjustRev(tech, delta) {
   updateDisplay();
 }
 
-function onRevInput() {
-  const p1 = parseInt(document.getElementById('rev-pct1').value)||0;
-  document.getElementById('rev-pct2').value = Math.max(0, 100 - p1);
+function onRevInput(tech) {
+  if (tech === 2) {
+    const p2 = parseInt(document.getElementById('rev-pct2').value)||0;
+    document.getElementById('rev-pct1').value = Math.max(0, 100 - p2);
+  } else {
+    const p1 = parseInt(document.getElementById('rev-pct1').value)||0;
+    document.getElementById('rev-pct2').value = Math.max(0, 100 - p1);
+  }
   markCustom();
   updateDisplay();
 }
