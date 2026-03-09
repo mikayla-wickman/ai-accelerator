@@ -530,6 +530,19 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                 </div>
               </div>
 
+              <!-- Splits disabled state -->
+              <div id="splits-disabled-banner" style="display:none">
+                <div class="card" style="text-align:center;padding:32px 20px;color:var(--text-muted)">
+                  <div style="font-size:28px;margin-bottom:10px">&#9741;</div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:6px">Job splits is turned off</div>
+                  <div style="font-size:13px;margin-bottom:16px">Enable job splits in settings to attribute revenue and commissions to individual technicians.</div>
+                  <button class="btn btn-outlined" onclick="goToSettings()" style="font-size:13px">Go to Settings &#8599;</button>
+                </div>
+              </div>
+
+              <!-- Splits + Commissions cards (hidden when feature is off) -->
+              <div id="splits-cards-container">
+
               <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">
                 <div class="figma-comm-header" style="cursor:default">
                   <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Splits</span>
@@ -781,6 +794,8 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                 <div id="error-note" style="display:none;font-size:12px;color:var(--error);font-weight:600">&#9888; Total must equal 100%</div>
               </div>
 
+              </div><!-- /splits-cards-container -->
+
             </div>
 
           </div><!-- /team-layout -->
@@ -829,6 +844,20 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
               <h2>Job Split Defaults</h2>
               <p>This default applies automatically to all new jobs with multiple technicians. Owners and admins can override the split on any individual job from the <strong>Team tab</strong> on the job details page.</p>
             </div>
+
+            <!-- Feature on/off toggle -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--bg-page);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:3px">Enable job splits</div>
+                <div style="font-size:13px;color:var(--text-muted)">When on, revenue and commissions can be attributed to individual technicians on multi-tech jobs.</div>
+              </div>
+              <label class="toggle" style="flex-shrink:0;margin-left:24px">
+                <input type="checkbox" id="settings-splits-enabled" checked onchange="onSplitsEnabledToggle()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div id="settings-splits-content">
 
             <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">Default revenue split method</div>
             <div class="option-list" id="settings-options">
@@ -889,6 +918,8 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
               <button class="btn btn-primary" onclick="saveSettings()">Save defaults</button>
               <button class="btn btn-ghost" onclick="goToJob()">Cancel</button>
             </div>
+
+            </div><!-- /settings-splits-content -->
           </div>
         </div>
 
@@ -1277,6 +1308,22 @@ updateDisplay();
 pullRevSplits();
 applyMatchToggleState();
 refreshCommCalc();
+
+// Job splits feature toggle
+var splitsEnabled = true;
+
+function onSplitsEnabledToggle() {
+  splitsEnabled = document.getElementById('settings-splits-enabled').checked;
+  document.getElementById('settings-splits-content').style.display = splitsEnabled ? '' : 'none';
+  updateSplitsFeatureVisibility();
+}
+
+function updateSplitsFeatureVisibility() {
+  document.getElementById('splits-cards-container').style.display = splitsEnabled ? '' : 'none';
+  document.getElementById('splits-disabled-banner').style.display = splitsEnabled ? 'none' : '';
+  var pip = document.getElementById('tab-pip');
+  if (pip) pip.style.display = splitsEnabled ? '' : 'none';
+}
 
 // Field tech status drill-in
 var ftsData = {
