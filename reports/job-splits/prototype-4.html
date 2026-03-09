@@ -547,19 +547,21 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                         <div id="stab-lineitems" class="chip" onclick="setCommTab('lineitems')">Line items</div>
                         <div id="stab-manual" class="chip active" onclick="setCommTab('manual')">Manual splits</div>
                       </div>
-                      <div id="comm-match-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 0 0;margin-top:12px;border-top:1px solid var(--border)">
-                        <div>
-                          <div style="font-size:13px;font-weight:600">Match job splits</div>
-                          <div style="font-size:12px;color:var(--text-muted)">Mirror the revenue attribution percentages above</div>
-                        </div>
-                        <label class="toggle">
-                          <input type="checkbox" id="comm-match-toggle" checked onchange="onCommMatchToggle()">
-                          <span class="toggle-slider"></span>
-                        </label>
-                      </div>
                       <div id="comm-lineitems-content" style="display:none;padding:14px 0 2px;text-align:center;color:var(--text-muted);font-size:13px">
                         Line item commission breakdown coming soon
                       </div>
+                    </div>
+
+                    <!-- Match toggle (shown for both Revenue/manual and Gross profit) -->
+                    <div id="comm-match-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px 14px">
+                      <div>
+                        <div style="font-size:13px;font-weight:600">Match job splits</div>
+                        <div style="font-size:12px;color:var(--text-muted)">Mirror the revenue attribution percentages above</div>
+                      </div>
+                      <label class="toggle">
+                        <input type="checkbox" id="comm-match-toggle" checked onchange="onCommMatchToggle()">
+                        <span class="toggle-slider"></span>
+                      </label>
                     </div>
 
                     <!-- Commission payout section -->
@@ -603,7 +605,10 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                               <button class="stepper-btn" onclick="adjustCommSplit(1,5)">+</button>
                             </div>
                           </td>
-                          <td style="padding:14px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-amount1">$210.00</span></td>
+                          <td style="padding:14px 8px;text-align:right;border-bottom:1px solid var(--border)">
+                            <span id="c-amount1">$210.00</span>
+                            <input id="c-amount1-in" type="number" value="210" step="0.01" style="display:none;width:72px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:13px;text-align:right" oninput="onCommAmountInput(1)">
+                          </td>
                           <td style="padding:14px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
                           <td style="padding:14px 0 14px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-total1" style="font-weight:600">$210.00</span></td>
                         </tr>
@@ -622,7 +627,10 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                               <button class="stepper-btn" onclick="adjustCommSplit(2,5)">+</button>
                             </div>
                           </td>
-                          <td style="padding:14px 8px;text-align:right"><span id="c-amount2">$210.00</span></td>
+                          <td style="padding:14px 8px;text-align:right">
+                            <span id="c-amount2">$210.00</span>
+                            <input id="c-amount2-in" type="number" value="210" step="0.01" style="display:none;width:72px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font);font-size:13px;text-align:right" oninput="onCommAmountInput(2)">
+                          </td>
                           <td style="padding:14px 8px;text-align:center"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
                           <td style="padding:14px 0 14px 8px;text-align:right"><span id="c-total2" style="font-weight:600">$210.00</span></td>
                         </tr>
@@ -1025,11 +1033,16 @@ function onCommMatchToggle() {
 }
 
 function applyMatchToggleState() {
-  document.getElementById('c-split1').style.display = commMatchToggle ? 'inline' : 'none';
-  document.getElementById('c-split2').style.display = commMatchToggle ? 'inline' : 'none';
-  document.getElementById('c-stepper1').style.display = commMatchToggle ? 'none' : 'flex';
-  document.getElementById('c-stepper2').style.display = commMatchToggle ? 'none' : 'flex';
-  if (commMatchToggle) pullRevSplits();
+  const locked = commMatchToggle;
+  document.getElementById('c-split1').style.display = locked ? 'inline' : 'none';
+  document.getElementById('c-split2').style.display = locked ? 'inline' : 'none';
+  document.getElementById('c-stepper1').style.display = locked ? 'none' : 'flex';
+  document.getElementById('c-stepper2').style.display = locked ? 'none' : 'flex';
+  document.getElementById('c-amount1').style.display = locked ? 'inline' : 'none';
+  document.getElementById('c-amount2').style.display = locked ? 'inline' : 'none';
+  document.getElementById('c-amount1-in').style.display = locked ? 'none' : 'inline-block';
+  document.getElementById('c-amount2-in').style.display = locked ? 'none' : 'inline-block';
+  if (locked) pullRevSplits();
 }
 
 function showCommContent(show) {
@@ -1044,6 +1057,10 @@ function showCommSteppers(show) {
   document.getElementById('c-split2').style.display = show ? 'none' : 'inline';
   document.getElementById('c-stepper1').style.display = show ? 'flex' : 'none';
   document.getElementById('c-stepper2').style.display = show ? 'flex' : 'none';
+  document.getElementById('c-amount1').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-amount2').style.display = show ? 'none' : 'inline';
+  document.getElementById('c-amount1-in').style.display = show ? 'inline-block' : 'none';
+  document.getElementById('c-amount2-in').style.display = show ? 'inline-block' : 'none';
 }
 
 function pullRevSplits() {
@@ -1083,6 +1100,24 @@ function onCommSplitInput(tech) {
   refreshCommCalc();
 }
 
+function onCommAmountInput(tech) {
+  const pool = parseFloat(document.getElementById('c-pool').value) || 0;
+  if (pool === 0) return;
+  const a = Math.max(0, Math.min(pool, parseFloat(document.getElementById('c-amount' + tech + '-in').value) || 0));
+  const otherA = pool - a;
+  const p1 = tech === 1 ? Math.round(a / pool * 100) : Math.round(otherA / pool * 100);
+  const p2 = 100 - p1;
+  setSplitValues(p1, p2);
+  document.getElementById('c-amount' + (tech === 1 ? 2 : 1) + '-in').value = otherA.toFixed(2);
+  const a1 = tech === 1 ? a : otherA;
+  const a2 = tech === 1 ? otherA : a;
+  document.getElementById('c-total1').textContent = '$' + a1.toFixed(2);
+  document.getElementById('c-total2').textContent = '$' + a2.toFixed(2);
+  const sub = a1 + a2;
+  document.getElementById('c-subtotal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('c-payout').textContent = '$' + sub.toFixed(2);
+}
+
 function onCommPool() { refreshCommCalc(); }
 
 function refreshCommCalc() {
@@ -1096,6 +1131,10 @@ function refreshCommCalc() {
   const a2 = pool * p2 / 100;
   document.getElementById('c-amount1').textContent = '$' + a1.toFixed(2);
   document.getElementById('c-amount2').textContent = '$' + a2.toFixed(2);
+  if (!useSpan) {
+    document.getElementById('c-amount1-in').value = a1.toFixed(2);
+    document.getElementById('c-amount2-in').value = a2.toFixed(2);
+  }
   document.getElementById('c-total1').textContent = '$' + a1.toFixed(2);
   document.getElementById('c-total2').textContent = '$' + a2.toFixed(2);
   const sub = a1 + a2;
