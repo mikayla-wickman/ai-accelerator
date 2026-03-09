@@ -404,9 +404,8 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
             <div>
               <!-- Field tech status card -->
               <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">
-                <div class="figma-comm-header" onclick="(function(btn){var b=document.getElementById('fts-body');var open=b.style.display!=='none';b.style.display=open?'none':'';btn.querySelector('#fts-chev').textContent=open?'▼':'▲';})(this)" style="cursor:pointer">
+                <div class="figma-comm-header" style="cursor:default">
                   <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Field tech status</span>
-                  <span id="fts-chev">▲</span>
                 </div>
                 <div id="fts-body">
                   <!-- Table view -->
@@ -634,9 +633,8 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
 
               <!-- Commissions card -->
               <div class="figma-comm-card">
-                  <div class="figma-comm-header" onclick="toggleCommCard()">
+                  <div class="figma-comm-header" style="cursor:default">
                     <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Commissions</span>
-                    <span id="comm-chev" style="font-size:11px;color:var(--text-muted)">&#9650;</span>
                   </div>
                   <div id="figma-comm-body">
 
