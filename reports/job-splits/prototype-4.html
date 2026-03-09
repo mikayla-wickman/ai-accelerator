@@ -576,7 +576,7 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                   <thead>
                     <tr>
                       <th style="width:40%">Technician</th>
-                      <th>Time logged</th>
+                      <th id="rev-time-th" style="display:none">Time logged</th>
                       <th>Split %</th>
                       <th class="right">Revenue</th>
                     </tr>
@@ -591,7 +591,7 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                           </div>
                         </div>
                       </td>
-                      <td style="color:var(--text-muted);font-size:13px">5h 30m</td>
+                      <td id="rev-time-td1" style="color:var(--text-muted);font-size:13px;display:none">5h 30m</td>
                       <td>
                         <div class="stepper">
                           <button class="stepper-btn" id="rev-minus1" onclick="adjustRev(1,-5)">&#8722;</button>
@@ -610,7 +610,7 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                           </div>
                         </div>
                       </td>
-                      <td style="color:var(--text-muted);font-size:13px">2h 30m</td>
+                      <td id="rev-time-td2" style="color:var(--text-muted);font-size:13px;display:none">2h 30m</td>
                       <td>
                         <div class="stepper">
                           <button class="stepper-btn" id="rev-minus2" onclick="adjustRev(2,-5)">&#8722;</button>
@@ -1008,6 +1008,12 @@ function applyPreset(key, clickedChip) {
   // Custom enables free edit of pct1; others auto-balance pct2 from pct1
   setRevPcts(p1, p2, key === 'custom');
   updateDisplay();
+
+  // Show time logged column only for proportional-to-time preset
+  var showTime = key === 'time';
+  ['rev-time-th','rev-time-td1','rev-time-td2'].forEach(function(id) {
+    document.getElementById(id).style.display = showTime ? '' : 'none';
+  });
 
   // Check if this differs from org default
   const defaultPcts = PRESET_VALUES[orgDefault] || PRESET_VALUES['equal'];
