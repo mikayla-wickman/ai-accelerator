@@ -172,7 +172,7 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
 .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
 .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: all 0.2s; }
 .toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: all 0.2s; }
-.toggle input:checked + .toggle-slider { background: var(--ai); }
+.toggle input:checked + .toggle-slider { background: var(--primary); }
 .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 /* Commission section */
@@ -402,7 +402,11 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
 
             <!-- Left: split controls -->
             <div>
-              <div class="card" style="margin-bottom:16px">
+              <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">
+                <div class="figma-comm-header" style="cursor:default">
+                  <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Splits</span>
+                </div>
+                <div style="padding:20px">
 
                 <!-- Split method -->
                 <div class="section-heading" style="margin-bottom:12px">
@@ -497,12 +501,13 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                   </div>
                   <span style="font-size:15px;font-weight:700">$4,200.00</span>
                 </div>
+                </div>
               </div>
 
               <!-- Commissions card -->
               <div class="figma-comm-card">
                   <div class="figma-comm-header" onclick="toggleCommCard()">
-                    <span style="font-weight:700;font-size:14px;color:var(--ai)">Commissions</span>
+                    <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Commissions</span>
                     <span id="comm-chev" style="font-size:11px;color:var(--text-muted)">&#9650;</span>
                   </div>
                   <div id="figma-comm-body">
@@ -552,23 +557,23 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                     </div>
                     <table id="comm-work-table" style="width:100%;border-collapse:collapse;font-size:13px">
                       <thead>
-                        <tr style="background:var(--bg-page)">
-                          <th style="text-align:left;padding:8px 18px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Work by</th>
-                          <th style="text-align:center;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Split</th>
-                          <th style="text-align:right;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Amount</th>
-                          <th style="text-align:center;padding:8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Rate</th>
-                          <th style="text-align:right;padding:8px 18px 8px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)">Total</th>
+                        <tr>
+                          <th style="text-align:left;padding:0 8px 10px 18px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)">Work by</th>
+                          <th style="text-align:center;padding:0 8px 10px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)">Split</th>
+                          <th style="text-align:right;padding:0 8px 10px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)">Amount</th>
+                          <th style="text-align:center;padding:0 8px 10px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)">Rate</th>
+                          <th style="text-align:right;padding:0 18px 10px 8px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)">Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td style="padding:10px 18px;border-bottom:1px solid var(--border)">
-                            <div style="display:flex;align-items:center;gap:8px">
-                              <div style="width:26px;height:26px;border-radius:50%;background:#e8f0ff;color:#0057ff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">MW</div>
-                              <span style="font-weight:600">Marcus Webb</span>
+                          <td style="padding:14px 8px 14px 18px;border-bottom:1px solid var(--border)">
+                            <div class="tech-cell">
+                              <div class="tech-avatar" style="background:#e8f0ff;color:#0057ff">MW</div>
+                              <div class="tech-name">Marcus Webb</div>
                             </div>
                           </td>
-                          <td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)">
+                          <td style="padding:14px 8px;text-align:center;border-bottom:1px solid var(--border)">
                             <span id="c-split1" style="font-weight:700;color:var(--ai);font-size:14px">50%</span>
                             <div id="c-stepper1" style="display:none;align-items:center;gap:2px;justify-content:center">
                               <button onclick="adjustCommSplit(1,-5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
@@ -576,18 +581,18 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                               <button onclick="adjustCommSplit(1,5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
                             </div>
                           </td>
-                          <td style="padding:10px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-amount1">$210.00</span></td>
-                          <td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
-                          <td style="padding:10px 18px 10px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-total1" style="font-weight:600">$210.00</span></td>
+                          <td style="padding:14px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-amount1">$210.00</span></td>
+                          <td style="padding:14px 8px;text-align:center;border-bottom:1px solid var(--border)"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
+                          <td style="padding:14px 18px 14px 8px;text-align:right;border-bottom:1px solid var(--border)"><span id="c-total1" style="font-weight:600">$210.00</span></td>
                         </tr>
                         <tr>
-                          <td style="padding:10px 18px">
-                            <div style="display:flex;align-items:center;gap:8px">
-                              <div style="width:26px;height:26px;border-radius:50%;background:#e6f7ee;color:#00a344;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">JT</div>
-                              <span style="font-weight:600">Jamie Torres</span>
+                          <td style="padding:14px 8px 14px 18px">
+                            <div class="tech-cell">
+                              <div class="tech-avatar" style="background:#e6f7ee;color:#00a344">JT</div>
+                              <div class="tech-name">Jamie Torres</div>
                             </div>
                           </td>
-                          <td style="padding:10px 8px;text-align:center">
+                          <td style="padding:14px 8px;text-align:center">
                             <span id="c-split2" style="font-weight:700;color:var(--ai);font-size:14px">50%</span>
                             <div id="c-stepper2" style="display:none;align-items:center;gap:2px;justify-content:center">
                               <button onclick="adjustCommSplit(2,-5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">&#8722;</button>
@@ -595,9 +600,9 @@ body { font-family: var(--font); background: var(--bg-page); color: var(--text-p
                               <button onclick="adjustCommSplit(2,5)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:var(--bg-page);cursor:pointer;font-size:14px;color:var(--text-muted);line-height:1;font-family:var(--font)">+</button>
                             </div>
                           </td>
-                          <td style="padding:10px 8px;text-align:right"><span id="c-amount2">$210.00</span></td>
-                          <td style="padding:10px 8px;text-align:center"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
-                          <td style="padding:10px 18px 10px 8px;text-align:right"><span id="c-total2" style="font-weight:600">$210.00</span></td>
+                          <td style="padding:14px 8px;text-align:right"><span id="c-amount2">$210.00</span></td>
+                          <td style="padding:14px 8px;text-align:center"><span style="background:var(--ai-bg);color:var(--ai);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">Work 10%</span></td>
+                          <td style="padding:14px 18px 14px 8px;text-align:right"><span id="c-total2" style="font-weight:600">$210.00</span></td>
                         </tr>
                       </tbody>
                     </table>
